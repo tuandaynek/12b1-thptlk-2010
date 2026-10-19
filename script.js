@@ -313,23 +313,27 @@ let rotY = 40;
 let targetRotX = 0, targetRotY = 40; // Góc mục tiêu để tạo quán tính xoay mượt
 let zoomZ = 0;                       // Khoảng cách zoom
 let targetZoomZ = 0;                 // Zoom mục tiêu
-
-let isDragging = false;
 let startX = 0, startY = -95;
 
+let isDragging = false;
+let initialTouchDistance = 0;
+
 // --- 1. KHỞI TẠO KHÔNG GIAN 3D ĐA LỚP DÀY DẶN ---
+// --- KHỞI TẠO KHÔNG GIAN 3D TỰ ĐỘNG TỐI ƯU HIỆU NĂNG (MOBILE FRIENDLY) ---
 function initStreamingUniverse() {
     const world = document.getElementById('world-3d');
     world.innerHTML = '';
     streamItems = [];
 
-    const totalElements = 130; // 🌟 Tăng số lượng lên 130 để phủ kín nhiều lớp không gian
+    // 🌟 TỐI ƯU DEVELOPER: Nếu là điện thoại, giảm số lượng xuống 45 items để mượt 60FPS, PC giữ 120 items
+    const isMobile = window.innerWidth < 768;
+    const totalElements = isMobile ? 45 : 120; 
 
     for (let i = 0; i < totalElements; i++) {
         let type, content;
-        if (i < basePhotos.length * 2) {
+        if (i < classPhotos.length) {
             type = 'photo';
-            content = basePhotos[i % basePhotos.length];
+            content = classPhotos[i % classPhotos.length];
         } else if (i % 2 === 0) {
             type = 'text';
             content = wishes3D[Math.floor(Math.random() * wishes3D.length)];
@@ -343,7 +347,9 @@ function initStreamingUniverse() {
 
         if (type === 'photo') {
             el.classList.add('stream-photo');
-            el.innerHTML = `<img src="${content.src}" onerror="this.src='https://picsum.photos/140/180?random=${i + 50}'">`;
+            // Trên mobile dùng ảnh kích thước nhỏ hơn để tiết kiệm RAM và băng thông load
+            const imgSize = isMobile ? '100/130' : '140/180';
+            el.innerHTML = `<img src="${content.src}" onerror="this.src='https://picsum.photos/${imgSize}?random=${i + 50}'">`;
             el.onclick = (e) => {
                 e.stopPropagation();
                 openModal(content);
@@ -358,17 +364,16 @@ function initStreamingUniverse() {
 
         world.appendChild(el);
 
-        // 🌟 Phân bổ bán kính rộng và chiều sâu Z sâu hơn để tạo nhiều tầng lớp (Layers)
-        const radius = 250 + Math.random() * 650;
+        const radius = (isMobile ? 200 : 280) + Math.random() * (isMobile ? 300 : 600);
         const theta = Math.random() * Math.PI * 2;
         const phi = (Math.random() - 0.5) * Math.PI;
 
         streamItems.push({
             element: el,
             x: radius * Math.cos(phi) * Math.sin(theta),
-            y: (Math.random() - 0.5) * 1200, // Trải dài theo chiều dọc
+            y: (Math.random() - 0.5) * (isMobile ? 900 : 1200),
             z: radius * Math.sin(phi) * Math.sin(theta),
-            speed: 3
+            speed: 0.6 + Math.random() * 0.6
         });
     }
 
@@ -426,7 +431,7 @@ function initStreamingLoop() {
 function initStreamingInteraction() {
     const scene3D = document.getElementById('universe-3d-scene');
 
-    // Kéo chuột xoay tự do
+    // --- 1. XỬ LÝ TRÊN MÁY TÍNH (PC) ---
     scene3D.addEventListener('mousedown', (e) => {
         isDragging = true;
         startX = e.clientX;
@@ -435,7 +440,6 @@ function initStreamingInteraction() {
 
     window.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-
         const deltaX = e.clientX - startX;
         const deltaY = e.clientY - startY;
 
@@ -450,35 +454,65 @@ function initStreamingInteraction() {
         isDragging = false; 
     });
 
-    // 🌟 ZOOM IN / ZOOM OUT BẰNG CON LĂN CHUỘT (MƯỢT MÀ)
+    // Zoom bằng con lăn chuột trên PC
     scene3D.addEventListener('wheel', (e) => {
         e.preventDefault();
-        targetZoomZ -= e.deltaY * 0.6; // Điều chỉnh độ nhạy khi lăn chuột
-        targetZoomZ = Math.max(-500, Math.min(450, targetZoomZ)); // Giới hạn khoảng cách zoom an toàn
+        targetZoomZ -= e.deltaY * 0.6;
+        targetZoomZ = Math.max(-400, Math.min(350, targetZoomZ));
     }, { passive: false });
 
-    // Hỗ trợ cảm ứng vuốt trên điện thoại / tablet
+    // --- 2. XỬ LÝ TRÊN ĐIỆN THOẠI / TABLET (MOBILE TOUCH & PINCH ZOOM) ---
     scene3D.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-    });
+        if (e.touches.length === 1) {
+            // Chạm 1 ngón: Bắt đầu xoay
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+            // Chạm 2 ngón: Bắt đầu tính khoảng cách để pinch-to-zoom
+            isDragging = false;
+            initialTouchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        }
+    }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const deltaX = e.touches[0].clientX - startX;
-        const deltaY = e.touches[0].clientY - startY;
+        if (e.touches.length === 1 && isDragging) {
+            // Vuốt 1 ngón để xoay 360 độ
+            const deltaX = e.touches[0].clientX - startX;
+            const deltaY = e.touches[0].clientY - startY;
 
-        targetRotY += deltaX * 0.35;
-        targetRotX -= deltaY * 0.35;
+            targetRotY += deltaX * 0.4;
+            targetRotX -= deltaY * 0.4;
 
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+            // 🌟 Dùng 2 ngón chụm/mở để Zoom In / Zoom Out mượt mà trên điện thoại
+            const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+            const distanceDelta = currentDistance - initialTouchDistance;
+
+            targetZoomZ += distanceDelta * 0.8;
+            targetZoomZ = Math.max(-400, Math.min(350, targetZoomZ));
+
+            initialTouchDistance = currentDistance;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) {
+            initialTouchDistance = 0;
+        }
+        if (e.touches.length === 0) {
+            isDragging = false;
+        }
     });
+}
 
-    window.addEventListener('touchend', () => { 
-        isDragging = false; 
-    });
+// Hàm phụ trợ tính khoảng cách giữa 2 ngón tay trên màn hình cảm ứng
+function getTouchDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 // --- MODAL XEM CHI TIẾT ---

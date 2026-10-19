@@ -631,3 +631,32 @@ body {
     border: 2px solid #ff69b4;
     box-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
 }
+
+@media (max-width: 768px) {
+    .stream-photo img {
+        width: 90px !important; /* Thu nhỏ kích thước ảnh trên mobile cho vừa tầm nhìn */
+        border-width: 2px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+    .stream-text {
+        font-size: 16px !important; /* Giảm size chữ tránh tràn màn hình di động */
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    }
+}
+
+/* --- TẮT HOÀN TOÀN KHUNG XANH KHI CHẠM/CLICK TRÊN MOBILE & PC --- */
+.stream-item-3d,
+.stream-photo,
+.stream-photo img,
+#universe-3d-scene,
+button,
+div {
+    -webkit-tap-highlight-color: transparent !important; /* Xóa hẳn khung xanh/xám khi tap trên iOS & Android */
+    -webkit-touch-callout: none !important;            /* Chặn hiện menu lưu ảnh mặc định khi giữ lâu trên mobile */
+    outline: none !important;                            /* Xóa đường viền focus */
+}
+
+/* Đảm bảo khi active/click không bị hiện viền hệ thống */
+.stream-photo img:active {
+    transform: scale(1.05);
+}

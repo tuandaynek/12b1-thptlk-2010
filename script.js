@@ -331,9 +331,9 @@ function initStreamingUniverse() {
 
     for (let i = 0; i < totalElements; i++) {
         let type, content;
-        if (i < classPhotos.length) {
+        if (i < basePhotos.length * 2) {
             type = 'photo';
-            content = classPhotos[i % classPhotos.length];
+            content = basePhotos[i % basePhotos.length];
         } else if (i % 2 === 0) {
             type = 'text';
             content = wishes3D[Math.floor(Math.random() * wishes3D.length)];

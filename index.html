@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20/10 - Thanh Xuân Lớp 12B1 🌸</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Canvas hạt lấp lánh nền (Giữ xuyên suốt mọi Scene) -->
+    <canvas id="sparkle-canvas"></canvas>
+
+    <!-- SCENE 1: Màn hình Ảnh Lớp 12B1 -->
+    <div id="intro-scene" class="scene">
+        <div class="intro-card">
+            <h1 class="main-heading">🌸 Chúc Mừng 20/10 - Lớp 12B1 🌸</h1>
+            <p class="sub-heading">Gửi đến những đóa hoa tuyệt vời nhất của thanh xuân!</p>
+            
+            <div class="photo-frame">
+                <img src="images/tap-the-lop.jpg" alt="Tập Thể Lớp 12B1" onerror="this.src='https://picsum.photos/450/280?random=88'">
+                <div class="frame-glow"></div>
+            </div>
+
+            <div class="greeting-message">
+                "Cảm ơn vì chúng ta đã là một phần thanh xuân rực rỡ của nhau."
+            </div>
+
+            <button class="action-btn" onclick="startBouquetScene()">
+                <span>Mở Món Quà Đặc Biệt 🎁</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCENE 2: Bó Hoa & Vũ Trụ Ảnh -->
+    <div id="bouquet-scene" class="scene hidden">
+        <!-- <div id="music-toggle" class="music-btn" onclick="toggleMusic()">🔊</div> -->
+        <div class="bouquet-wrapper" id="bouquet-box" onclick="triggerBouquetAction()">
+            <img src="images/bouquet-center.png" alt="Bó hoa" class="bouquet-base-img" onerror="this.src='https://i.ibb.co/6R8z15x/bouquet.png'">
+            
+            <div class="butterfly b1">🦋</div>
+            <div class="butterfly b2">🦋</div>
+
+            <div class="small-blooms-container" id="small-blooms"></div>
+        </div>
+
+        <div class="story-guide" id="story-guide">
+            - Bấm vào bó hoa để xem những bông hoa đẹp nhất lớp 12B1 -
+        </div>
+
+        <div class="universe-container" id="universe-container"></div>
+    </div>
+
+    <!-- SCENE 3: Không Gian Dòng Chảy 3D (Flowing 3D Stream) -->
+    <div id="universe-3d-scene" class="scene hidden">
+        <audio id="bg-music" loop>
+            <source src="images/cho_chut__noi_nay_co_anh.mp3" type="audio/mpeg">
+        </audio>
+
+        <div class="space-3d-viewport" id="viewport-3d">
+            <div class="space-3d-world" id="world-3d">
+                <!-- Các phần tử dòng chảy 3D render bằng JS -->
+            </div>
+        </div>
+
+        <!-- 🌟 NÚT MỞ PHONG THƯ DƯỚI CÙNG MÀN HÌNH -->
+        <button id="open-letter-btn" onclick="toggleEnvelope(true)">
+            ✉️ Mở Bức Thư Đặc Biệt 🌸
+        </button>
+
+        <!-- 🌟 BỨC THƯ / PHONG THƯ CHÚC MỪNG 20/10 -->
+        <div id="envelope-overlay" class="envelope-modal hidden" onclick="toggleEnvelope(false)">
+            <div class="envelope-wrapper" onclick="event.stopPropagation()">
+                <!-- Phong thư bên ngoài -->
+                <div class="envelope" id="envelope-card" onclick="openLetterContent()">
+                    <div class="envelope-flap"></div>
+                    <div class="envelope-front">
+                        <div class="envelope-stamp">
+                            <span class="stamp-wax">DLove</span>
+                        </div>
+                        <div class="envelope-title">
+                            <p class="sub-title">Dành tặng các cô gái</p>
+                            <h2 class="main-title">20 / 10</h2>
+                            <p class="desc">Một chút yêu thương gửi đến tập thể 12B1 💖</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tấm thiệp lời chúc bên trong (Trượt ra khi mở) -->
+                <div class="letter-card hidden" id="letter-content">
+                    <span class="close-letter-btn" onclick="toggleEnvelope(false)">&times;</span>
+                    <div class="letter-header">
+                        <h3>Gửi các cô gái tuyệt vời của lớp 12B1</h3>
+                    </div>
+                    <div class="letter-body">
+                        <div class="letter-text">
+                            <p>Tui chúc các nữ sinh 12B1 ngày 20/10 thật rực rỡ, luôn xinh đẹp, rạng rỡ và tràn đầy niềm vui!</p>
+                            <p>Cảm ơn vì đã là một phần thanh xuân tuyệt vời nhất. Chúc các bạn học kỳ này thi đâu đậu đó, đạt mọi nguyện vọng ước mơ nha! 🌸</p>
+                            <p class="letter-signature">Mãi là tập thể 12B1 tuyệt vời nhất</p>
+                        </div>
+                        <div class="letter-img">
+                            <img src="./images/tap-the-lop.jpg" alt="Kỷ niệm 12B1" id="letter-main-img">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Phóng To Ảnh Chi Tiết -->
+    <div id="image-modal" class="hidden" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modal-zoomed-img" src="" alt="Zoomed Photo">
+            <p id="modal-caption">Hoa của lớp 12B1 💖</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

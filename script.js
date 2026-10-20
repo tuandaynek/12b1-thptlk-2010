@@ -2,11 +2,21 @@
 const isMobile = window.innerWidth < 768;
 const basePhotos = [];
 
-// Tự động sinh ra 52 ảnh từ 1.jpg đến 52.jpg trong folder images/
-for (let i = 1; i <= 7; i++) {
+const validStudents = [
+    "1_Nguyễn Thị Hải Yến",
+    "Bùi Nguyễn Thuỷ Tiên",
+    "Huỳnh Thư Nhã Uyên",
+    "Lê Ngọc Minh Hằng",
+    "Lê Trần Bảo Ngọc",
+    "Nguyễn Thị Hải Yến",
+    "Ngô Mai Phương",
+    "Vương Thảo Như"
+]
+
+for (let i = 0; i < validStudents.length; i++) {
     basePhotos.push({
-        src: `images/girls/${i}.png`,
-        name: `Bạn 12B1 #${i}`
+        src: `images/girls/${validStudents[i]}.jpg`,
+        name: `Bạn ${validStudents[i]}`
     });
 }
 
@@ -16,9 +26,20 @@ while (classPhotos.length < 50) {
 }
 classPhotos.length = 50;
 
-const validStudents = [
-    "1", "2", "3", "4", "5", "6", "7"
-]
+const totalBoyPhotos = 22;
+const totalPresentPhotos = 22;
+
+const boyPhotos = []
+for (let i = 1; i <= totalBoyPhotos; i++){
+    boyPhotos.push(`images/boys/${i}.jpg`)
+}
+
+const presentPhotos = []
+for (let i = 1; i <= totalPresentPhotos; i++){
+    presentPhotos.push(`images/presents/${i}.jpg`)
+}
+
+
 
 // --- CANVAS HẠT LẤP LÁNH (GIỮ XUYÊN SUỐT) ---
 const canvas = document.getElementById('sparkle-canvas');
@@ -95,137 +116,375 @@ function animateCanvas() {
 }
 animateCanvas();
 
-// --- HÀM XỬ LÝ CHUYỂN CẢNH & CÁ NHÂN HÓA ĐỘNG ---
-// 🌸 Khi bấm nút mở quà ở trang đầu: Kiểm tra tên, nếu hợp lệ thì BẬT CANVAS SƯƠNG MỜ LÊN
+// 1. Khi bấm nút "Mở Món Quà Đặc Biệt" ở Màn Hình Đầu (Yên lặng)
 function onStartScratch() {
     const nameInput = document.getElementById('user-name-input');
     const errorMsgEl = document.getElementById('name-error-msg');
     if (errorMsgEl) errorMsgEl.innerText = "";
     const rawName = nameInput ? nameInput.value.trim() : "";
 
+    // Bắt buộc nhập tên
     if (!rawName) {
         if (errorMsgEl) errorMsgEl.innerText = "🌸 Nhập họ tên vào để nhận điều đặc biệt nhé!";
         if (nameInput) nameInput.focus();
         return;
     }
 
-    // Xử lý lưu thông tin tên & ảnh động trước (nếu cần dùng tiếp theo)
+    // 1. Chuẩn hóa tên và cập nhật dữ liệu vào thư ẩn bên trong
     prepareStudentData(rawName);
 
-    // 🌟 Kích hoạt canvas sương mờ để người dùng cào/lau
-    activateFogCanvas();
+    const audio = document.getElementById('bg-music');
+    if (audio) {
+        audio.play().catch(() => {});
+    }
+
+    // 3. Kích hoạt hiệu ứng Cinematic (Vẽ trái tim -> Dịch trái -> Hiện hộp quà)
+    runCinematicSequence();
 }
 
-// 🌸 Hàm lưu tạm dữ liệu học sinh
+// 2. Hàm chuẩn bị dữ liệu tên & đường dẫn ảnh cá nhân
 function prepareStudentData(rawName) {
-    const cleanFileName = rawName.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-\$/g, "");
+    // Viết hoa chữ cái đầu mỗi từ (VD: Lê Trần Bảo Ngọc)
+    const formattedName = rawName
+        .toLowerCase()
+        .split(' ')
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
 
-    let displayName = rawName;
-    let imagePath = `./images/girls/${cleanFileName}.png`;
-    let finalWish = `Chúc ${displayName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé! ✨`;
+    // Mã hóa tên file hỗ trợ khoảng trắng & dấu tiếng Việt (mặc định đuôi .jpg)
+    const encodedFileName = encodeURIComponent(formattedName);
+    let imagePath = `./images/girls/${encodedFileName}.jpg`;
 
-    updateLetterDynamicContent({
-        name: displayName,
-        image: imagePath,
-        wish: finalWish
-    });
+    let finalWish = `Chúc ${formattedName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé! ✨`;
+
+    // Cập nhật thông tin vào DOM của thư
+    if (typeof updateLetterDynamicContent === 'function') {
+        updateLetterDynamicContent({
+            name: formattedName,
+            image: imagePath,
+            wish: finalWish
+        });
+    }
 }
 
-// 🌸 Hàm Cào sương mờ
-function activateFogCanvas() {
-    const canvas = document.getElementById('fog-canvas');
-    if (!canvas) return;
-    
-    canvas.classList.remove('hidden');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    let clearedPixels = 0;
-    let isCompleted = false;
+// Kích hoạt overlay Cinematic song song
+function runCinematicSequence() {
+    const overlay = document.getElementById('cinematic-overlay');
+    if (!overlay) return;
 
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        ctx.fillStyle = '#fff0f5'; // Màu sương mờ hồng nhẹ
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.font = 'italic 18px Georgia, serif';
-        ctx.fillStyle = '#c2185b';
-        ctx.textAlign = 'center';
-        ctx.fillText('Dùng tay / chuột lau sạch lớp sương mờ nhé... 🌸', canvas.width / 2, canvas.height / 2);
+    overlay.classList.remove('hidden');
+    overlay.classList.add('active');
+}
+
+let totalChoices = 0;
+let lastChoice = null;
+let giftCount = 0;
+let heartCount = 0;
+let heartScale = 1.0;
+let giftScale = 1.0;
+
+// Trạng thái mở quà
+let firstChoiceFinal = null;
+let hasOpenedFirst = false;
+let hasOpenedSecond = false;
+let collectedPhotos = { heart: [], gift: [] };
+
+function handleChoice(choiceType) {
+    if (hasOpenedFirst && !hasOpenedSecond) {
+        // Nếu đã mở cái đầu, bấm vào cái còn lại để mở nốt
+        triggerSecondOpening(choiceType);
+        return;
     }
 
-    const brushRadius = isMobile ? 45 : 60;
+    if (hasOpenedFirst && hasOpenedSecond) return; // Đã xong hết thì chặn click
 
-    function scratch(x, y) {
-        if (isCompleted) return;
-        ctx.save();
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(x, y, brushRadius, 0, Math.PI * 2, false);
-        ctx.fill();
-        ctx.restore();
-        checkClearedPercentage();
+    totalChoices++;
+    const promptEl = document.getElementById('cinematic-prompt');
+    const heartItem = document.getElementById('heart-choice-item');
+    const giftItem = document.getElementById('gift-choice-item');
+
+    // Cộng dồn scale
+    if (choiceType === 'gift') {
+        giftScale += 0.22;
+        heartScale = Math.max(0.4, heartScale - 0.18);
+        if(giftItem) giftItem.style.setProperty('--current-scale', giftScale);
+    } else {
+        heartScale += 0.22;
+        giftScale = Math.max(0.4, giftScale - 0.18);
+        if(heartItem) heartItem.style.setProperty('--current-scale', heartScale);
     }
 
-    function checkClearedPercentage() {
-        if (isCompleted) return;
-        clearedPixels++;
-        if (clearedPixels % 12 !== 0) return;
+    if (heartItem) heartItem.style.transform = `scale(${heartScale})`;
+    if (giftItem) giftItem.style.transform = `scale(${giftScale})`;
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = imageData.data;
-        let transparentCount = 0;
-
-        for (let i = 3; i < pixels.length; i += 16) {
-            if (pixels[i] === 0) transparentCount++;
+    let message = "";
+    if (lastChoice !== null && lastChoice !== choiceType) {
+        message = (choiceType === 'gift') ? "Hey, quay đầu là bờ hả ta 😏" : "Bạn bỏ tụi tui mà đi 💔";
+    } else {
+        if (choiceType === 'gift') {
+            giftCount++;
+            message = (giftCount === 1) ? "Các bạn chả thương nam tụi tui 🥲" : (giftCount === 2) ? "Thật sự là vậy sao 😳" : "Nhất quyết không chọn tụi tui à 🥺";
+        } else {
+            heartCount++;
+            message = (heartCount === 1) ? "Không muốn nhận quà hả ta 🤔" : (heartCount === 2) ? "Thật sự là không cần quà à 🥀" : "Người con gái liêm chính của 12B1 👑";
         }
+    }
+    lastChoice = choiceType;
 
-        const percentage = (transparentCount / (pixels.length / 16)) * 100;
+    if (promptEl) {
+        promptEl.innerText = message;
+        promptEl.classList.remove('pulse-text');
+        void promptEl.offsetWidth;
+        promptEl.classList.add('pulse-text');
+    }
 
-        // 🌟 KHI LAU XONG > 45%: Ẩn canvas đi VÀ GỌI HÀM CHUYỂN SCENE CHÍNH THỨC
-        if (percentage > 45) {
-            isCompleted = true;
-            canvas.classList.add('fade-out');
+    // 🌟 ĐẠT MỐC 4 LẦN -> MỞ CÁI ĐẦU TIÊN
+    if (totalChoices >= 4 && !hasOpenedFirst) {
+        hasOpenedFirst = true;
+        firstChoiceFinal = choiceType;
+        triggerFirstExplosionAndNeat(choiceType);
+    }
+}
+
+// 1. Mở cái đầu tiên: Tuôn trào rồi xếp gọn vào 1 bên
+
+function triggerFirstExplosionAndNeat(choiceType) {
+    const heartItem = document.getElementById('heart-choice-item');
+    const giftItem = document.getElementById('gift-choice-item');
+    const promptEl = document.getElementById('cinematic-prompt');
+
+    const targetItem = (choiceType === 'heart') ? heartItem : giftItem;
+    if (targetItem) targetItem.classList.add('shake-violently');
+
+    setTimeout(() => {
+        if (targetItem) targetItem.classList.remove('shake-violently');
+        
+        // Tuôn trào ảnh rồi xếp gọn vào lề (Heart -> Trái, Gift -> Phải)
+        const side = (choiceType === 'heart') ? 'left' : 'right';
+        launchAndOrganizePhotos(choiceType, side, () => {
+            // Sau khi xếp xong, đổi text yêu cầu mở cái còn lại
+            if (promptEl) {
+                promptEl.innerText = "Trẻ con mới chọn, mở cả cái còn lại đi nào";
+                promptEl.style.color = "#ffd1dc";
+            }
+            // Kích hoạt item còn lại để có thể click tiếp
+            const remainingItem = (choiceType === 'heart') ? giftItem : heartItem;
+            if (remainingItem) {
+                remainingItem.style.opacity = '1';
+                remainingItem.style.cursor = 'pointer';
+            }
+        });
+    }, 1000);
+}
+
+// 2. Mở cái thứ hai (cái còn lại)
+function triggerSecondOpening(choiceType) {
+    if (choiceType === firstChoiceFinal) return; // Phải bấm vào cái khác
+    hasOpenedSecond = true;
+
+    const heartItem = document.getElementById('heart-choice-item');
+    const giftItem = document.getElementById('gift-choice-item');
+    const promptEl = document.getElementById('cinematic-prompt');
+
+    const targetItem = (choiceType === 'heart') ? heartItem : giftItem;
+    if (targetItem) targetItem.classList.add('shake-violently');
+
+    setTimeout(() => {
+        if (targetItem) targetItem.classList.remove('shake-violently');
+        
+        const side = (choiceType === 'heart') ? 'left' : 'right';
+        launchAndOrganizePhotos(choiceType, side, () => {
+            // Khi cả 2 đã mở xong -> Kích hoạt Grand Finale (Vòng tròn xoay vòng -> Văng tung tóe -> Vào scene chính)
+            if (promptEl) {
+                promptEl.innerText = "Tuyệt vời! Khám phá bất ngờ lớn nhất nào 🌸";
+            }
 
             setTimeout(() => {
-                canvas.style.display = 'none';
-                
-                // 👉 BÂY GIỜ MỚI GỌI HÀM CHUYỂN SCENE THẬT (Hiện bó hoa, chạy smallBlooms, bật nhạc)
-                startBouquetScene();
-
-            }, 1000);
-        }
-    }
-
-    // Sự kiện chuột & touch
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e.clientX, e.clientY); });
-    canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratch(e.clientX, e.clientY); });
-    window.addEventListener('mouseup', () => { isDrawing = false; });
-
-    canvas.addEventListener('touchstart', (e) => {
-        isDrawing = true;
-        const touch = e.touches[0];
-        scratch(touch.clientX, touch.clientY);
-    }, { passive: true });
-    
-    canvas.addEventListener('touchmove', (e) => {
-        if (isDrawing && e.touches.length > 0) {
-            const touch = e.touches[0];
-            scratch(touch.clientX, touch.clientY);
-        }
-    }, { passive: true });
-    canvas.addEventListener('touchend', () => { isDrawing = false; });
-
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+                startGrandFinaleSequence();
+            }, 1200);
+        });
+    }, 1000);
 }
 
-// 🌸 HÀM CHUYỂN SCENE CHÍNH THỨC (Giữ nguyên logic cũ của bạn)
+// 🛠️ Hàm bóc tách đường dẫn ảnh sạch sẽ, tránh lấy nhầm Object/HTML card
+function getCleanImageSrc(item) {
+    if (!item) return './images/boys/boy1.png';
+    if (typeof item === 'string') {
+        // Nếu lỡ là chuỗi HTML tag, bóc lấy src bên trong
+        if (item.trim().startsWith('<')) {
+            const match = item.match(/src="([^"]+)"/);
+            return match ? match[1] : './images/boys/boy1.png';
+        }
+        return item;
+    }
+    // Nếu là object chứa thông tin học sinh, lấy thuộc tính ảnh (image, src, photo, url...)
+    return item.image || item.src || item.photo || item.url || item.avatar || './images/boys/boy1.png';
+}
+
+// Hàm tuôn ảnh và xếp gọn vào panel 2 bên
+function launchAndOrganizePhotos(choiceType, sideName, callback) {
+    const container = document.getElementById('photo-explosion-container') || document.body;
+    
+    // 1. Tạo hoặc lấy panel bên lề
+    let panel = document.getElementById(`panel-${sideName}`);
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = `panel-${sideName}`;
+        panel.className = `photo-side-panel ${sideName}`;
+        document.getElementById('cinematic-overlay').appendChild(panel);
+    }
+
+    panel.innerHTML = '';
+    collectedPhotos[choiceType] = [];
+
+    // 2. Lấy dữ liệu thô và trích xuất ra mảng đường dẫn ảnh sạch 100%
+    let rawList = (choiceType === 'heart') ? boyPhotos : presentPhotos;
+    let photoList = rawList.map(item => getCleanImageSrc(item));
+    photoList = [...new Set(photoList)]; // Loại bỏ trùng lặp
+
+    let loadedCount = 0;
+    const totalToSpawn = photoList.length;
+
+    for (let i = 0; i < totalToSpawn; i++) {
+        setTimeout(() => {
+            const imgSrc = photoList[i];
+            
+            // A. Tạo hiệu ứng bay tuôn trào từ tâm ra tứ phía
+            const flyingImg = document.createElement('img');
+            flyingImg.src = imgSrc;
+            flyingImg.className = 'flying-photo';
+            
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 180 + Math.random() * 200; // Khoảng cách bay tỏa ra
+            flyingImg.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+            flyingImg.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+            flyingImg.style.setProperty('--rot', `${Math.random() * 50 - 25}deg`);
+            container.appendChild(flyingImg);
+
+            // B. Sau đó gom vào dạt thành lưới 3 cột xếp lớp ở lề
+            setTimeout(() => {
+                flyingImg.remove();
+
+                const neatImg = document.createElement('img');
+                neatImg.src = imgSrc;
+                neatImg.className = 'neat-card';
+
+                // Góc xoay và độ dịch chuyển ngẫu nhiên nghệ thuật
+                const rot = Math.random() * 26 - 13;
+                const tx = Math.random() * 16 - 8;
+                const ty = Math.random() * 16 - 8;
+                
+                neatImg.style.setProperty('--card-transform', `rotate(${rot}deg) translate(${tx}px, ${ty}px)`);
+                neatImg.style.zIndex = i;
+
+                panel.appendChild(neatImg);
+                collectedPhotos[choiceType].push(imgSrc);
+
+                setTimeout(() => neatImg.classList.add('show-neat'), 50);
+
+                loadedCount++;
+                if (loadedCount === totalToSpawn && typeof callback === 'function') {
+                    callback();
+                }
+            }, 1200);
+
+        }, i * 100); // Tốc độ tuôn ảnh liên tục
+    }
+}
+
+// 🌟 GRAND FINALE: Vòng tròn ảnh khổng lồ (Gộp tất cả ảnh) -> Thu nhỏ -> Văng tung tóe
+function startGrandFinaleSequence() {
+    // 1. Ẩn 2 bên panel, các item cũ và TẮT HẲN dòng chữ prompt cho đỡ vướng mắt
+    document.querySelectorAll('.photo-side-panel').forEach(p => p.style.opacity = '0');
+    const stageBox = document.getElementById('cinematic-stage-box');
+    if (stageBox) stageBox.style.opacity = '0';
+    
+    const promptEl = document.getElementById('cinematic-prompt');
+    if (promptEl) {
+        promptEl.style.display = 'none'; // Xóa sổ dòng chữ mất thẩm mỹ
+    }
+
+    const container = document.getElementById('photo-explosion-container');
+    if (!container) return;
+    container.innerHTML = ''; // Clear sạch màn hình
+
+    // 2. Lấy TẤT CẢ ảnh từ cả boyPhotos và presentPhotos để vòng tròn thật nhiều ảnh
+    let allBoys = (typeof boyPhotos !== 'undefined') ? boyPhotos.map(getCleanImageSrc) : [];
+    let allPresents = (typeof presentPhotos !== 'undefined') ? presentPhotos.map(getCleanImageSrc) : [];
+    
+    // Gộp tất cả và lọc bỏ trùng lặp
+    let allPhotos = [...new Set([...allBoys, ...allPresents, ...collectedPhotos.heart, ...collectedPhotos.gift])];
+    
+    if (allPhotos.length === 0) {
+        allPhotos = ['./images/boys/boy1.png', './images/making/gift1.png'];
+    }
+
+    // 3. Tạo container vòng tròn orbit khổng lồ
+    const orbitWrapper = document.createElement('div');
+    orbitWrapper.className = 'circle-orbit-container';
+    container.appendChild(orbitWrapper);
+
+    const totalOrbitPhotos = allPhotos.length; // Dùng toàn bộ số lượng ảnh có trong kho
+    
+    // BƯỚC A: Xếp thành vòng tròn TO BỰ (Bán kính 280px thay vì 180px cũ)
+    for (let i = 0; i < totalOrbitPhotos; i++) {
+        const img = document.createElement('img');
+        img.src = allPhotos[i];
+        img.className = 'orbit-photo';
+
+        const radius = isMobile  ? "130px" : "300px";
+
+        const angleStep = (360 / totalOrbitPhotos) * i;
+        img.style.setProperty('--base-angle', `${angleStep}deg`);
+        img.style.setProperty('--orbit-radius', radius); // Vòng tròn mở rộng hoành tráng
+        orbitWrapper.appendChild(img);
+    }
+
+    // BƯỚC B: Sau 3 giây, thu nhỏ bán kính vòng tròn lại mượt mà (từ to -> nhỏ)
+    setTimeout(() => {
+        orbitWrapper.style.transition = 'transform 1.5s ease-in-out';
+        orbitWrapper.style.transform = 'scale(0.35)'; // Thu nhỏ gọn gàng vào tâm
+    }, 3000);
+
+    // BƯỚC C: Sau khi thu nhỏ xong (4.5 giây) -> Văng tung tóe khắp màn hình tứ phương tám hướng
+    setTimeout(() => {
+        orbitWrapper.remove(); // Xóa vòng tròn đi
+
+        // Tạo hiệu ứng văng tung tóe với tất cả các tấm ảnh
+        for (let i = 0; i < totalOrbitPhotos; i++) {
+            const scatterImg = document.createElement('img');
+            scatterImg.src = allPhotos[i];
+            scatterImg.className = 'scatter-photo';
+
+            const scatterAngle = (i / totalOrbitPhotos) * 360;
+            const scatterDist = 450 + Math.random() * 200; // Văng xa ra tận viền màn hình
+            scatterImg.style.setProperty('--sc-dx', `${Math.cos((scatterAngle * Math.PI) / 180) * scatterDist}px`);
+            scatterImg.style.setProperty('--sc-dy', `${Math.sin((scatterAngle * Math.PI) / 180) * scatterDist}px`);
+            scatterImg.style.setProperty('--sc-rot', `${Math.random() * 360 - 180}deg`);
+
+            container.appendChild(scatterImg);
+        }
+
+        // BƯỚC D: Chuyển thẳng vào Scene bó hoa & thư 3D chính thức của 12B1
+        setTimeout(() => {
+            const overlay = document.getElementById('cinematic-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.classList.add('fade-out');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    if (typeof startBouquetScene === 'function') {
+                        startBouquetScene(); // Bật scene tiếp theo
+                    }
+                }, 500);
+            }
+        }, 1000);
+
+            }, 4500);
+}
+
+// 🌸 3. HÀM HIỆU ỨNG TRÁI TIM GIẬT LẠI & CHUYỂN SCENE BÓ HOA
 function startBouquetScene() {
     const introCard = document.querySelector('.intro-card');
     const introScene = document.getElementById('intro-scene');
@@ -241,14 +500,15 @@ function startBouquetScene() {
         if (introScene) introScene.classList.add('hidden');
         if (bouquetScene) bouquetScene.classList.remove('hidden');
         if (welcomeBox) welcomeBox.classList.add('hidden');
-        
+
         if (bouquetBox) {
             bouquetBox.classList.add('portal-appear');
         }
-        
+
         // Kích hoạt smallBlooms và nhạc nền chuẩn xác ở đây
         initSmallBlooms();
     }, 600);
+
 }
 
 function initSmallBlooms() {
@@ -283,7 +543,7 @@ function initSmallBlooms() {
         currentInterval = Math.max(endInterval, currentInterval);
         accumulatedDelay += currentInterval;
 
-        div.innerHTML = `<img src="${item.src}" onerror="this.src='https://picsum.photos/100/100?random=${index}'">`;
+        div.innerHTML = `<img src="${encodeURIComponent(item.src)}" onerror="this.src='https://picsum.photos/100/100?random=${index}'">`;
         container.appendChild(div);
     });
 }
@@ -307,38 +567,44 @@ function triggerBouquetAction() {
         bouquetBox.classList.add('sinking-down');
 
         // Hiển thị câu thoại cinematic lắng đọng
-        const audio = document.getElementById('bg-music');
-        if (audio) {
-            audio.play().catch(() => {});
-        }
         showAdvancedCinematicText();
 
-        // 🌟 Gọi hàm floodScreenPhotos() để ảnh bung nở tỏa ra khắp màn hình 2D mượt mà
+        // 🌟 Sau 2 giây, bó hoa biến mất và kích hoạt hiệu ứng bung nở ảnh
         setTimeout(() => {
             bouquetBox.classList.add('disappear');
-            floodScreenPhotos();
-        }, 1200);
+            
+            // floodScreenPhotos sẽ trả về tổng thời gian (ms) chạy xong toàn bộ ảnh
+            const totalFloodDuration = floodScreenPhotos();
 
-        // 🌟 Sau khi ảnh đã tràn ngập màn hình, chuyển mượt sang không gian 3D (Scene 3)
-        setTimeout(() => {
-            const bouquetScene = document.getElementById('bouquet-scene');
-            bouquetScene.classList.add('smooth-fade-out'); // Mờ dần Scene 2
-
+            // 🌟 CHỜ CHO ĐẾN KHI TOÀN BỘ ẢNH BUNG NỞ XONG HẲN MỚI CHUYỂN SANG 3D
             setTimeout(() => {
-                bouquetScene.classList.add('hidden');
+                const bouquetScene = document.getElementById('bouquet-scene');
+                if (!bouquetScene) return;
                 
-                const scene3 = document.getElementById('universe-3d-scene');
-                scene3.classList.remove('hidden');
-                scene3.style.opacity = '0';
+                bouquetScene.classList.add('smooth-fade-out'); // Mờ dần Scene 2
 
-                // Fade-in không gian 3D từ từ
                 setTimeout(() => {
-                    scene3.style.opacity = '1';
-                }, 50);
+                    bouquetScene.classList.add('hidden');
+                    
+                    const scene3 = document.getElementById('universe-3d-scene');
+                    if (!scene3) return;
 
-                initStreamingUniverse();
-            }, 800);
-        }, 4600);
+                    scene3.classList.remove('hidden');
+                    scene3.style.opacity = '0';
+
+                    // Fade-in không gian 3D từ từ
+                    setTimeout(() => {
+                        scene3.style.opacity = '1';
+                    }, 50);
+
+                    if (typeof initStreamingUniverse === 'function') {
+                        initStreamingUniverse();
+                    }
+                }, 800); // Thời gian fade-out scene 2
+
+            }, totalFloodDuration + 800); // Đợi ảnh nở xong + dư ra chút đỉnh cho đẹp mắt
+
+        }, 2000);
 
         step = 3;
     }
@@ -360,19 +626,19 @@ function showAdvancedCinematicText() {
     }, 3800);
 }
 
-// Giữ nguyên hàm floodScreenPhotos() để tạo hiệu ứng ảnh bung tỏa mượt mà
+// 🌟 Hàm floodScreenPhotos tính toán và trả về tổng thời gian chạy
 function floodScreenPhotos() {
     const universeContainer = document.getElementById('universe-container');
-    if (!universeContainer) return; // Đảm bảo container tồn tại
+    if (!universeContainer) return 0;
     
     universeContainer.innerHTML = '';
     universeContainer.classList.add('active');
 
     const total = classPhotos.length;
     let accumulatedDelay = 0;
-    const startInterval = 0.08; 
-    const endInterval = 0.004;  
-    const step = (startInterval - endInterval) / (total - 1);
+    const startInterval = isMobile ? 0.12 : 0.08; 
+    const endInterval = isMobile ? 0.08 : 0.004;
+    const stepInterval = (startInterval - endInterval) / (total - 1 || 1);
 
     classPhotos.forEach((item, index) => {
         const photoDiv = document.createElement('div');
@@ -387,19 +653,32 @@ function floodScreenPhotos() {
         photoDiv.style.setProperty('--rot', `${randomRotate}deg`);
         photoDiv.style.animationDelay = `${accumulatedDelay}s`;
 
-        let currentInterval = startInterval - (index * step);
+        let currentInterval = startInterval - (index * stepInterval);
         currentInterval = Math.max(endInterval, currentInterval);
         accumulatedDelay += currentInterval;
 
-        photoDiv.innerHTML = `<img src="${item.src}" onerror="this.src='https://picsum.photos/220/260?random=${index + 20}'">`;
+        // Xử lý encode đường dẫn ảnh an toàn
+        let imgSrc = '';
+        if (typeof item === 'string') {
+            imgSrc = item;
+        } else if (typeof getCleanImageSrc === 'function') {
+            imgSrc = getCleanImageSrc(item);
+        } else {
+            imgSrc = item.src || item.image || '';
+        }
+
+        photoDiv.innerHTML = `<img src="${encodeURIComponent(imgSrc)}" onerror="this.src='https://picsum.photos/220/260?random=${index + 20}'">`;
         
         photoDiv.onclick = (e) => {
             e.stopPropagation();
-            openModal(item);
+            if (typeof openModal === 'function') openModal(item);
         };
 
         universeContainer.appendChild(photoDiv);
     });
+
+    // Trả về tổng thời gian delay (tính bằng mili-giây) + thêm 1000ms thời lượng animation của tấm cuối cùng
+    return (accumulatedDelay * 1000) + 1000;
 }
 
 function triggerBoomEffect() {
@@ -469,7 +748,7 @@ function initStreamingUniverse() {
     streamItems = [];
 
     // 🌟 TỐI ƯU DEVELOPER: Nếu là điện thoại, giảm số lượng xuống 45 items để mượt 60FPS, PC giữ 120 items
-    const totalElements = isMobile ? 60 : 120; 
+    const totalElements = isMobile ? 80 : 120; 
 
     for (let i = 0; i < totalElements; i++) {
         let type, content;
@@ -490,7 +769,7 @@ function initStreamingUniverse() {
         if (type === 'photo') {
             el.classList.add('stream-photo');
             // Trên mobile dùng ảnh kích thước nhỏ hơn để tiết kiệm RAM và băng thông load
-            const imgSize = isMobile ? '100/130' : '140/180';
+            const imgSize = isMobile ? '90/120' : '140/180';
             el.innerHTML = `<img src="${content.src}" onerror="this.src='https://picsum.photos/${imgSize}?random=${i + 50}'">`;
             el.onclick = (e) => {
                 e.stopPropagation();
@@ -663,7 +942,7 @@ function openModal(item) {
     const zoomedImg = document.getElementById('modal-zoomed-img');
     const caption = document.getElementById('modal-caption');
 
-    zoomedImg.src = item.src;
+    zoomedImg.src = encodeURIComponent(item.src);
     caption.innerText = `💖 ${item.name || 'Hoa 12B1'} 💖`;
     modal.classList.remove('hidden');
 }

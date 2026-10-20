@@ -11,9 +11,7 @@
 
     <!-- Canvas hạt lấp lánh nền (Giữ xuyên suốt mọi Scene) -->
     <canvas id="sparkle-canvas"></canvas>
-    <!-- 🌟 CANVAS LỚP SƯƠNG MỜ CHO CÀO / LAU KÍNH -->
-    <canvas id="fog-canvas" class="fog-canvas hidden"></canvas>
-
+    
     <!-- SCENE 1: Màn hình Ảnh Lớp 12B1 -->
     <div id="intro-scene" class="scene">
         <div class="intro-card">
@@ -168,6 +166,33 @@
             <img id="modal-zoomed-img" src="" alt="Zoomed Photo">
             <p id="modal-caption">Hoa của lớp 12B1 💖</p>
         </div>
+    </div>
+
+    <!-- 🌟 OVERLAY CINEMATIC MINI-GAME & HIỆU ỨNG TUÔN TRÀO ẢNH -->
+    <div id="cinematic-overlay" class="cinematic-overlay hidden">
+        <div class="cinematic-stage" id="cinematic-stage-box">
+            
+            <!-- 1. Cụm Trái Tim -->
+            <div id="heart-choice-item" class="cinematic-item" onclick="handleChoice('heart')">
+                <svg class="cinematic-svg" viewBox="0 0 100 90" width="130" height="115">
+                    <path class="draw-path heart-path" d="M 50,30 A 20,20 0 0,1 90,30 Q 90,60 50,85 Q 10,60 10,30 A 20,20 0 0,1 50,30 Z" />
+                </svg>
+            </div>
+
+            <!-- 2. Cụm Hộp Quà -->
+            <div id="gift-choice-item" class="cinematic-item" onclick="handleChoice('gift')">
+                <svg class="cinematic-svg" viewBox="0 0 100 100" width="130" height="115">
+                    <path class="draw-path gift-path" d="M 22,35 H 78 V 45 H 22 Z M 27,45 H 73 V 90 H 27 Z M 50,35 V 90 M 27,65 H 73 M 50,35 C 40,18 30,25 45,35 C 35,25 40,18 50,35 C 60,18 65,25 55,35 C 65,25 60,18 50,35 Z" />
+                </svg>
+            </div>
+
+        </div>
+
+        <!-- Container chứa ảnh bay ra tuôn trào -->
+        <div id="photo-explosion-container" class="photo-explosion-container"></div>
+
+        <!-- Dòng chữ cảm xúc chính -->
+        <div id="cinematic-prompt" class="cinematic-main-prompt">Bạn muốn trái tim hay quà?</div>
     </div>
 
     <script src="script.js"></script>

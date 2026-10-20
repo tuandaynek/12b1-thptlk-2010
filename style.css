@@ -682,14 +682,70 @@ body {
 @keyframes breathe { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
 
 @media (max-width: 520px) {
-    .letter-scene { padding-top: .5rem; }
-    .letter-paper { left: 3%; right: 3%; padding: 1rem 1.05rem .85rem; }
-    .paper-botanical { transform: scale(.78) rotate(-4deg); transform-origin: top left; }
-    .paper-botanical-bottom { transform: scale(-.78, -.78) rotate(-4deg); transform-origin: bottom right; }
-    .paper-content { max-width: 57%; margin-top: .65rem; font-size: .69rem; line-height: 1.65; }
-    .paper-content p { margin-bottom: .48rem; }
-    .paper-portrait { right: 1rem; bottom: 1rem; width: 32%; max-height: 38%; }
-    .envelope.is-open .letter-paper { transform: translateY(-42%); }
+    .letter-scene { 
+        padding-top: .5rem; 
+        width: 96vw; 
+    }
+    
+    .envelope { 
+        width: 95vw; 
+    }
+
+    /* Tối ưu kích thước giấy thư trên điện thoại */
+    .letter-paper { 
+        left: 2%; 
+        right: 2%; 
+        padding: 1.2rem 1rem 1rem; 
+        max-height: 75vh;
+        overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+    }
+
+    /* Cho phần nội dung chữ trải dài toàn bộ chiều rộng, không bị bóp cột */
+    .paper-content { 
+        max-width: 100% !important; 
+        padding-right: 0 !important; 
+        font-size: 0.78rem; 
+        line-height: 1.55; 
+        margin-top: 0.4rem;
+    }
+
+    .paper-content p { 
+        margin-bottom: 0.5rem; 
+    }
+
+    /* Đưa ảnh portrait xuống dưới dạng khối căn giữa, không bị đè lên chữ */
+    .paper-portrait { 
+        position: relative !important; 
+        display: block !important;
+        margin: 12px auto 8px auto !important;
+        right: auto !important; 
+        bottom: auto !important; 
+        width: 90px !important; 
+        height: 110px !important; 
+        max-height: none !important;
+        transform: none !important;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    /* Căn chỉnh lại chữ ký ở dưới */
+    .paper-sign {
+        width: 100% !important;
+        justify-content: center;
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 0.7rem;
+    }
+
+    /* Điều chỉnh độ trồi lên của thư trên màn hình nhỏ */
+    .envelope.is-open .letter-paper { 
+        transform: translateY(-44%); 
+    }
+
+    .interaction-hint { 
+        margin-top: 1.2rem; 
+        font-size: 0.7rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -769,25 +825,294 @@ div {
 
 
 
-/* Fog */
-.fog-canvas {
+
+
+.cinematic-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(26, 8, 20, 0.98), rgba(8, 2, 8, 0.99));
     z-index: 99999;
-    cursor: pointer;
-    touch-action: none; /* Ngăn cuộn trang trên điện thoại khi vuốt cào kính */
-    transition: opacity 1s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease;
 }
 
-/* Trạng thái ẩn ban đầu */
-.fog-canvas.hidden {
+.cinematic-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cinematic-overlay.hidden {
     display: none !important;
 }
 
-.fog-canvas.fade-out {
+/* Khung chứa 2 items đứng ngang hàng */
+.cinematic-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    width: 100%;
+    max-width: 700px;
+}
+
+.cinematic-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.cinematic-item:hover {
+    transform: scale(1.08);
+}
+
+/* Hiệu ứng nét vẽ (Stroke Drawing) cho SVG */
+.cinematic-svg {
+    overflow: visible;
+}
+
+.draw-path {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    /* Đồng loạt vẽ xong trong 1.5s, sau đó tô màu và phát sáng phập phồng */
+    animation: drawShape 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards, 
+               fillShape 0.5s ease 1.5s forwards,
+               glowPulse 1.2s ease-in-out 2s infinite alternate;
+}
+
+/* Cả trái tim và hộp quà dùng chung tông màu hồng rực rỡ cho đồng bộ */
+.heart-path { 
+    stroke: #ff4081; 
+    stroke-dasharray: 350; 
+    stroke-dashoffset: 350; 
+}
+
+.gift-path { 
+    stroke: #ff4081; /* Đồng màu hồng với trái tim cho đồng bộ concept */
+    stroke-dasharray: 450; 
+    stroke-dashoffset: 450; 
+}
+
+@keyframes drawShape { 
+    to { stroke-dashoffset: 0; } 
+}
+
+@keyframes fillShape {
+    to {
+        fill: rgba(255, 64, 129, 0.85);
+        stroke: #ff80ab;
+        filter: drop-shadow(0 0 25px rgba(255, 64, 129, 0.9));
+    }
+}
+
+@keyframes glowPulse {
+    0% { filter: drop-shadow(0 0 15px rgba(255, 64, 129, 0.6)); }
+    100% { filter: drop-shadow(0 0 30px rgba(255, 105, 180, 1)); }
+}
+
+/* Nhãn chú thích nhỏ dưới mỗi icon */
+.item-label {
+    font-size: 1rem;
+    color: #ffd1dc;
+    font-style: italic;
     opacity: 0;
+    animation: fadeInText 0.8s ease 1.5s forwards;
+}
+
+/* Dòng chữ chính ở giữa */
+.cinematic-main-prompt {
+    font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+    font-style: italic;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeInText 0.8s ease 1.2s forwards;
+}
+
+@keyframes fadeInText {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 600px) {
+    .cinematic-stage {
+        gap: 30px;
+    }
+    .cinematic-svg {
+        width: 100px;
+        height: 90px;
+    }
+}
+
+/* Hiệu ứng phóng to khi được chọn */
+.cinematic-item.scale-up {
+    transform: scale(1.25) translateY(-10px);
+    filter: drop-shadow(0 0 25px rgba(255, 64, 129, 0.9));
+    z-index: 10;
+}
+
+/* Hiệu ứng thu nhỏ khi bỏ qua */
+.cinematic-item.scale-down {
+    transform: scale(0.75);
+    opacity: 0.5;
+    filter: grayscale(40%);
+}
+
+/* Hiệu ứng chữ đổi cảm xúc */
+.cinematic-main-prompt {
+    font-size: clamp(1.1rem, 3.2vw, 1.6rem);
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+    font-style: italic;
+    letter-spacing: 0.03em;
+    padding: 0 20px;
+    transition: all 0.3s ease;
+    opacity: 1 !important; /* Đảm bảo luôn hiện sáng rõ */
+}
+
+.cinematic-main-prompt.pulse-text {
+    animation: textBounce 0.4s ease;
+}
+
+@keyframes textBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); color: #ff80ab; text-shadow: 0 0 25px rgba(255, 64, 129, 1); }
+    100% { transform: scale(1); }
+}
+
+/* Mở rộng vùng chứa sang 2 bên để ảnh phủ rộng khung hình */
+.photo-side-panel {
+    position: absolute;
+    top: 0;
+    bottom: 15%;
+    width: 320px; /* Tăng chiều rộng để rải đều ảnh */
+    z-index: 40;
     pointer-events: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Chia thành 3 cột thoáng đãng */
+    gap: 15px;
+    padding: 15px;
+}
+
+.photo-side-panel.left { left: 20px; }
+.photo-side-panel.right { right: 20px; }
+
+/* Khóa cứng ảnh bay tuôn trào luôn nhỏ gọn, không bao giờ bị to bự */
+.flying-photo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 75px !important;
+    height: 95px !important;
+    object-fit: cover !important;
+    border-radius: 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+    animation: explodePhoto 2.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+    z-index: 100;
+}
+
+@keyframes explodePhoto {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    }
+    20% { opacity: 1; }
+    100% {
+        opacity: 0.95;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1) rotate(var(--rot));
+    }
+}
+
+/* Từng tấm ảnh trong lưới xếp lớp nghệ thuật */
+.neat-card {
+    width: 85px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 3px solid #fff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+    transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.neat-card.show-neat {
+    opacity: 0.98;
+    /* Hiệu ứng xoay và dịch chuyển ngẫu nhiên cho mỗi ảnh */
+    transform: scale(1) var(--card-transform);
+}
+
+/* 🌟 Hiệu ứng vòng tròn xoay vòng (Circular Carousel) */
+.circle-orbit-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.orbit-photo {
+    position: absolute;
+    width: 70px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #ff80ab;
+    box-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+    transform-origin: center center;
+    animation: rotateOrbit 6s linear infinite;
+}
+
+@keyframes rotateOrbit {
+    from {
+        transform: rotate(var(--base-angle)) translate(var(--orbit-radius)) rotate(calc(-1 * var(--base-angle)));
+    }
+    to {
+        transform: rotate(calc(var(--base-angle) + 360deg)) translate(var(--orbit-radius)) rotate(calc(-1 * (var(--base-angle) + 360deg)));
+    }
+}
+
+/* 🌟 Hiệu ứng văng tung tóe cuối cùng */
+.scatter-photo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid #fff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: scatterFinal 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    z-index: 110;
+}
+
+@keyframes scatterFinal {
+    to {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--sc-dx)), calc(-50% + var(--sc-dy))) scale(0.2) rotate(var(--sc-rot));
+    }
 }

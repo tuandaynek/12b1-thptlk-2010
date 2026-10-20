@@ -433,40 +433,38 @@ function startGrandFinaleSequence() {
     orbitWrapper.className = 'circle-orbit-container';
     container.appendChild(orbitWrapper);
 
-    const totalOrbitPhotos = allPhotos.length; // Dùng toàn bộ số lượng ảnh có trong kho
+    const totalOrbitPhotos = allPhotos.length;
+    const orbitDuration = 12; // Phải khớp với 12s trong CSS moveHeart
     
-    // BƯỚC A: Xếp thành vòng tròn TO BỰ (Bán kính 280px thay vì 180px cũ)
     for (let i = 0; i < totalOrbitPhotos; i++) {
         const img = document.createElement('img');
         img.src = allPhotos[i];
         img.className = 'orbit-photo';
 
-        const radius = isMobile  ? "130px" : "300px";
+        // Rải đều độ trễ âm để các ảnh nối đuôi nhau thành dải lụa
+        const delay = - (orbitDuration / totalOrbitPhotos) * i;
+        img.style.animationDelay = `${delay}s`;
 
-        const angleStep = (360 / totalOrbitPhotos) * i;
-        img.style.setProperty('--base-angle', `${angleStep}deg`);
-        img.style.setProperty('--orbit-radius', radius); // Vòng tròn mở rộng hoành tráng
         orbitWrapper.appendChild(img);
     }
 
-    // BƯỚC B: Sau 3 giây, thu nhỏ bán kính vòng tròn lại mượt mà (từ to -> nhỏ)
+    // BƯỚC B: Sau 4 giây, thu nhỏ toàn bộ khung trái tim lại từ to -> nhỏ
     setTimeout(() => {
         orbitWrapper.style.transition = 'transform 1.5s ease-in-out';
-        orbitWrapper.style.transform = 'scale(0.35)'; // Thu nhỏ gọn gàng vào tâm
-    }, 3000);
+        orbitWrapper.style.transform = 'scale(0.35)';
+    }, 4000);
 
-    // BƯỚC C: Sau khi thu nhỏ xong (4.5 giây) -> Văng tung tóe khắp màn hình tứ phương tám hướng
+    // BƯỚC C: Sau 5.5 giây -> Văng tung tóe khắp màn hình rồi chuyển scene
     setTimeout(() => {
-        orbitWrapper.remove(); // Xóa vòng tròn đi
+        orbitWrapper.remove(); // Xóa khung trái tim đi
 
-        // Tạo hiệu ứng văng tung tóe với tất cả các tấm ảnh
         for (let i = 0; i < totalOrbitPhotos; i++) {
             const scatterImg = document.createElement('img');
             scatterImg.src = allPhotos[i];
             scatterImg.className = 'scatter-photo';
 
             const scatterAngle = (i / totalOrbitPhotos) * 360;
-            const scatterDist = 450 + Math.random() * 200; // Văng xa ra tận viền màn hình
+            const scatterDist = 450 + Math.random() * 200;
             scatterImg.style.setProperty('--sc-dx', `${Math.cos((scatterAngle * Math.PI) / 180) * scatterDist}px`);
             scatterImg.style.setProperty('--sc-dy', `${Math.sin((scatterAngle * Math.PI) / 180) * scatterDist}px`);
             scatterImg.style.setProperty('--sc-rot', `${Math.random() * 360 - 180}deg`);
@@ -474,7 +472,7 @@ function startGrandFinaleSequence() {
             container.appendChild(scatterImg);
         }
 
-        // BƯỚC D: Chuyển thẳng vào Scene bó hoa & thư 3D chính thức của 12B1
+        // BƯỚC D: Chuyển sang Scene bó hoa 3D
         setTimeout(() => {
             const overlay = document.getElementById('cinematic-overlay');
             if (overlay) {
@@ -483,13 +481,13 @@ function startGrandFinaleSequence() {
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     if (typeof startBouquetScene === 'function') {
-                        startBouquetScene(); // Bật scene tiếp theo
+                        startBouquetScene();
                     }
                 }, 500);
             }
         }, 1000);
 
-            }, 4500);
+    }, 5500);
 }
 
 // 🌸 3. HÀM HIỆU ỨNG TRÁI TIM GIẬT LẠI & CHUYỂN SCENE BÓ HOA

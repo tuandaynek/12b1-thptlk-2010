@@ -1061,51 +1061,63 @@ div {
     transform: scale(1) var(--card-transform);
 }
 
-/* --- 📱 GIAO DIỆN MOBILE (Đẩy lên TRÊN và xuống DƯỚI) --- */
+/* --- 📱 CSS RESPONSIVE CHUẨN ĐÉT CHO MOBILE --- */
 @media (max-width: 768px) {
+    /* Thu nhỏ cụm Trái tim & Hộp quà ở giữa để nhường chỗ */
     .cinematic-stage {
-        gap: 25px;
-        transform: scale(0.9);
+        gap: 20px !important;
+        transform: scale(0.75) !important;
+        margin-top: -10px;
     }
 
+    .cinematic-main-prompt {
+        font-size: 1.05rem !important;
+        padding: 0 15px !important;
+        margin-top: 5px;
+    }
+
+    /* Khung chứa ảnh Trên & Dưới: Khóa cứng chiều cao, không cho đè vào giữa */
     .photo-side-panel {
-        position: absolute;
-        left: 10px;
-        right: 10px;
-        width: auto;
-        height: auto;
-        max-height: 28vh; /* Giới hạn chiều cao không che màn hình giữa */
-        display: flex;
-        flex-wrap: wrap; /* Tự động xuống dòng khi đầy */
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-        padding: 6px;
-        overflow-y: auto;
-        grid-template-columns: none;
+        position: absolute !important;
+        left: 5px !important;
+        right: 5px !important;
+        width: calc(100% - 10px) !important;
+        max-height: 20vh !important; /* Giới hạn tối đa 20% chiều cao màn hình */
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-content: flex-start !important;
+        gap: 0px !important; /* Dùng âm margin thay cho gap */
+        padding: 4px !important;
+        overflow: hidden !important; /* Khóa không cho tràn */
+        z-index: 30 !important;
     }
 
-    /* Lựa chọn 1 nằm ở TRÊN */
+    /* Vùng TRÊN sát mép đỉnh */
     .photo-side-panel.top {
-        top: 8px;
-        bottom: auto;
+        top: 5px !important;
+        bottom: auto !important;
     }
 
-    /* Lựa chọn 2 nằm ở DƯỚI */
+    /* Vùng DƯỚI sát mép đáy */
     .photo-side-panel.bottom {
-        bottom: 8px;
-        top: auto;
+        bottom: 5px !important;
+        top: auto !important;
     }
 
-    /* Thu nhỏ kích thước ảnh trên mobile cho gọn gàng xinh xắn */
+    /* Thẻ ảnh nhỏ xinh, xếp đè nhẹ gối lên nhau */
     .neat-card {
-        width: 52px !important;
-        height: 68px !important;
-        border-width: 1.5px;
+        width: 46px !important;
+        height: 60px !important;
+        border-width: 1.5px !important;
+        border-radius: 4px !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.6) !important;
+        margin: -4px -5px !important; /* Âm margin giúp các ảnh đè gối lên nhau cực nghệ */
+        flex-shrink: 0 !important;
     }
 }
 
-/* 🌟 Hiệu ứng vòng tròn xoay vòng (Circular Carousel) */
+/* 🌟 Container quỹ đạo đặt chính giữa màn hình */
 .circle-orbit-container {
     position: absolute;
     top: 50%;
@@ -1114,6 +1126,7 @@ div {
     height: 0;
     z-index: 100;
     pointer-events: none;
+    transform: translate(-50%, -50%);
 }
 
 .orbit-photo {
@@ -1123,21 +1136,43 @@ div {
     object-fit: cover;
     border-radius: 6px;
     border: 2px solid #ff80ab;
-    box-shadow: 0 0 20px rgba(255, 64, 129, 0.8);
+    box-shadow: 0 0 25px rgba(255, 64, 129, 0.9);
     transform-origin: center center;
-    animation: rotateOrbit 6s linear infinite;
+    /* Thời lượng 12 giây cho ảnh trôi mượt mà */
+    animation: moveHeart 12s linear infinite;
+    top: -45px;
+    left: -35px;
 }
 
-@keyframes rotateOrbit {
-    from {
-        transform: rotate(var(--base-angle)) translate(var(--orbit-radius)) rotate(calc(-1 * var(--base-angle)));
-    }
-    to {
-        transform: rotate(calc(var(--base-angle) + 360deg)) translate(var(--orbit-radius)) rotate(calc(-1 * (var(--base-angle) + 360deg)));
-    }
+/* 🌟 Tọa độ toán học vẽ trái tim hoàn mỹ: Có đỉnh lõm ở trên, vòm hai bên và chóp nhọn ở dưới */
+@keyframes moveHeart {
+    0%, 100% { 
+        transform: translate(0px, -100px) scale(1) rotate(0deg); 
+    }   /* Điểm lõm chính giữa đỉnh trên (Cleft) */
+    10% { 
+        transform: translate(110px, -220px) scale(1.05) rotate(20deg); 
+    }   /* Vòm đỉnh phải */
+    20% { 
+        transform: translate(230px, -160px) scale(1.1) rotate(40deg); 
+    }   /* Vai phải */
+    35% { 
+        transform: translate(240px, 20px) scale(1.15) rotate(25deg); 
+    }   /* Sườn phải uốn cong xuống */
+    50% { 
+        transform: translate(0px, 270px) scale(1) rotate(0deg); 
+    }   /* 🌟 Chỗ chóp nhọn ở đáy tim (Bottom tip) */
+    65% { 
+        transform: translate(-240px, 20px) scale(1.15) rotate(-25deg); 
+    }   /* Sườn trái uốn cong lên */
+    80% { 
+        transform: translate(-230px, -160px) scale(1.1) rotate(-40deg); 
+    }   /* Vai trái */
+    90% { 
+        transform: translate(-110px, -220px) scale(1.05) rotate(-20deg); 
+    }   /* Vòm đỉnh trái */
 }
 
-/* 🌟 Hiệu ứng văng tung tóe cuối cùng */
+/* Hiệu ứng văng tung tóe cuối cùng (giữ nguyên) */
 .scatter-photo {
     position: absolute;
     top: 50%;

@@ -1195,3 +1195,28 @@ div {
         transform: translate(calc(-50% + var(--sc-dx)), calc(-50% + var(--sc-dy))) scale(0.2) rotate(var(--sc-rot));
     }
 }
+
+/* --- 📱 RESPONSIVE CHO QUỸ ĐẠO TRÁI TIM TRÊN MOBILE --- */
+@media (max-width: 768px) {
+    /* Thu nhỏ toàn bộ khung trái tim vừa vặn màn hình điện thoại */
+    .circle-orbit-container {
+        transform: translate(-50%, -50%) scale(0.55) !important; 
+    }
+
+    /* Thu nhỏ ảnh lại chút xíu cho thanh thoát, không cấn viền */
+    .orbit-photo {
+        width: 52px !important;
+        height: 68px !important;
+        top: -34px !important;
+        left: -26px !important;
+        border-width: 1.5px !important;
+        border-radius: 4px !important;
+        box-shadow: 0 0 15px rgba(255, 64, 129, 0.8) !important;
+    }
+
+    /* Thu nhỏ ảnh văng tung tóe trên mobile */
+    .scatter-photo {
+        width: 55px !important;
+        height: 72px !important;
+    }
+}

@@ -322,26 +322,35 @@ function getCleanImageSrc(item) {
     return item.image || item.src || item.photo || item.url || item.avatar || './images/boys/boy1.png';
 }
 
-// Hàm tuôn ảnh và xếp gọn vào panel 2 bên
+// Hàm tuôn ảnh và xếp gọn vào panel linh hoạt theo thiết bị
 function launchAndOrganizePhotos(choiceType, sideName, callback) {
     const container = document.getElementById('photo-explosion-container') || document.body;
     
-    // 1. Tạo hoặc lấy panel bên lề
-    let panel = document.getElementById(`panel-${sideName}`);
+    // 📱 Kiểm tra xem có phải màn hình mobile không (< 768px)
+    const isMobileScreen = window.innerWidth <= 768;
+
+    let targetArea = sideName; // Mặc định 'left' hoặc 'right' cho desktop
+    if (isMobileScreen) {
+        // Trên mobile: nếu là lề trái -> đẩy lên 'top', lề phải -> đẩy xuống 'bottom'
+        targetArea = (sideName === 'left') ? 'top' : 'bottom';
+    }
+    
+    // Tạo hoặc lấy panel tương ứng
+    let panel = document.getElementById(`panel-${targetArea}`);
     if (!panel) {
         panel = document.createElement('div');
-        panel.id = `panel-${sideName}`;
-        panel.className = `photo-side-panel ${sideName}`;
+        panel.id = `panel-${targetArea}`;
+        panel.className = `photo-side-panel ${targetArea}`;
         document.getElementById('cinematic-overlay').appendChild(panel);
     }
 
     panel.innerHTML = '';
     collectedPhotos[choiceType] = [];
 
-    // 2. Lấy dữ liệu thô và trích xuất ra mảng đường dẫn ảnh sạch 100%
+    // Lấy danh sách ảnh sạch 100%
     let rawList = (choiceType === 'heart') ? boyPhotos : presentPhotos;
     let photoList = rawList.map(item => getCleanImageSrc(item));
-    photoList = [...new Set(photoList)]; // Loại bỏ trùng lặp
+    photoList = [...new Set(photoList)];
 
     let loadedCount = 0;
     const totalToSpawn = photoList.length;
@@ -350,19 +359,19 @@ function launchAndOrganizePhotos(choiceType, sideName, callback) {
         setTimeout(() => {
             const imgSrc = photoList[i];
             
-            // A. Tạo hiệu ứng bay tuôn trào từ tâm ra tứ phía
+            // 1. Bay tuôn trào từ tâm màn hình ra
             const flyingImg = document.createElement('img');
             flyingImg.src = imgSrc;
             flyingImg.className = 'flying-photo';
             
             const angle = Math.random() * Math.PI * 2;
-            const dist = 180 + Math.random() * 200; // Khoảng cách bay tỏa ra
+            const dist = 140 + Math.random() * 120;
             flyingImg.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
             flyingImg.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
-            flyingImg.style.setProperty('--rot', `${Math.random() * 50 - 25}deg`);
+            flyingImg.style.setProperty('--rot', `${Math.random() * 40 - 20}deg`);
             container.appendChild(flyingImg);
 
-            // B. Sau đó gom vào dạt thành lưới 3 cột xếp lớp ở lề
+            // 2. Gom vào xếp gọn gàng vào vùng Top/Bottom (hoặc Left/Right trên PC)
             setTimeout(() => {
                 flyingImg.remove();
 
@@ -370,10 +379,9 @@ function launchAndOrganizePhotos(choiceType, sideName, callback) {
                 neatImg.src = imgSrc;
                 neatImg.className = 'neat-card';
 
-                // Góc xoay và độ dịch chuyển ngẫu nhiên nghệ thuật
-                const rot = Math.random() * 26 - 13;
-                const tx = Math.random() * 16 - 8;
-                const ty = Math.random() * 16 - 8;
+                const rot = Math.random() * 24 - 12;
+                const tx = Math.random() * 12 - 6;
+                const ty = Math.random() * 12 - 6;
                 
                 neatImg.style.setProperty('--card-transform', `rotate(${rot}deg) translate(${tx}px, ${ty}px)`);
                 neatImg.style.zIndex = i;
@@ -389,7 +397,7 @@ function launchAndOrganizePhotos(choiceType, sideName, callback) {
                 }
             }, 1200);
 
-        }, i * 100); // Tốc độ tuôn ảnh liên tục
+        }, i * 90);
     }
 }
 

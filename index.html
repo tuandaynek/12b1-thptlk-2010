@@ -27,6 +27,18 @@
                 "Cảm ơn vì chúng ta đã là một phần thanh xuân rực rỡ của nhau."
             </div>
 
+            <!-- 🌟 Ô NHẬP TÊN CÁ NHÂN HÓA -->
+            <div class="name-input-group">
+                <input 
+                    type="text" 
+                    id="user-name-input" 
+                    placeholder="Nhập họ tên vào để nhận điều đặc biệt"
+                    autocomplete="off"
+                />
+                <!-- Thẻ hiển thị lỗi/thông báo nhỏ nhẹ -->
+                <p id="name-error-msg" class="error-msg"></p>
+            </div>
+
             <button class="action-btn" onclick="startBouquetScene()">
                 <span>Mở Món Quà Đặc Biệt 🎁</span>
             </button>
@@ -70,40 +82,79 @@
         </button>
 
         <!-- 🌟 BỨC THƯ / PHONG THƯ CHÚC MỪNG 20/10 -->
-        <div id="envelope-overlay" class="envelope-modal hidden" onclick="toggleEnvelope(false)">
-            <div class="envelope-wrapper" onclick="event.stopPropagation()">
-                <!-- Phong thư bên ngoài -->
-                <div class="envelope" id="envelope-card" onclick="openLetterContent()">
-                    <div class="envelope-flap"></div>
-                    <div class="envelope-front">
-                        <div class="envelope-stamp">
-                            <span class="stamp-wax">DLove</span>
-                        </div>
-                        <div class="envelope-title">
-                            <p class="sub-title">Dành tặng các cô gái</p>
-                            <h2 class="main-title">20 / 10</h2>
-                            <p class="desc">Một chút yêu thương gửi đến tập thể 12B1 💖</p>
-                        </div>
-                    </div>
-                </div>
+        <div id="envelope-overlay" class="letter-stage hidden" onclick="toggleEnvelope(false)">
+            <div class="ambient ambient-one"></div>
+            <div class="ambient ambient-two"></div>
 
-                <!-- Tấm thiệp lời chúc bên trong (Trượt ra khi mở) -->
-                <div class="letter-card hidden" id="letter-content">
-                    <span class="close-letter-btn" onclick="toggleEnvelope(false)">&times;</span>
-                    <div class="letter-header">
-                        <h3>Gửi các cô gái tuyệt vời của lớp 12B1</h3>
-                    </div>
-                    <div class="letter-body">
-                        <div class="letter-text">
-                            <p>Tui chúc các nữ sinh 12B1 ngày 20/10 thật rực rỡ, luôn xinh đẹp, rạng rỡ và tràn đầy niềm vui!</p>
-                            <p>Cảm ơn vì đã là một phần thanh xuân tuyệt vời nhất. Chúc các bạn học kỳ này thi đâu đậu đó, đạt mọi nguyện vọng ước mơ nha! 🌸</p>
-                            <p class="letter-signature">Mãi là tập thể 12B1 tuyệt vời nhất</p>
+            <div class="letter-scene" id="letter-scene-container" onclick="event.stopPropagation()">
+                <p class="eyebrow">MỘT LỜI NHẮN NHỎ</p>
+                <h1>Gửi những đóa hoa 12B1</h1>
+                <p class="scene-subtitle">Chạm vào phong thư để mở món quà của thanh xuân</p>
+
+                <!-- BAO THƯ ĐA LỚP (ENVELOPE CONTAINER) -->
+                <button class="envelope" id="envelope-card" onclick="openLetterContent()" aria-label="Mở bức thư">
+                    <div class="envelope-shadow"></div>
+
+                    <!-- Lớp 1: Mặt sau bao thư & Họa tiết hoa lá 2 bên -->
+                    <div class="envelope-back">
+                        <div class="botanical botanical-left" aria-hidden="true">
+                            <span class="stem"></span>
+                            <span class="leaf leaf-one"></span>
+                            <span class="leaf leaf-two"></span>
+                            <span class="flower flower-one"><i></i><i></i><i></i><i></i><b></b></span>
+                            <span class="flower flower-two"><i></i><i></i><i></i><i></i><b></b></span>
                         </div>
-                        <div class="letter-img">
-                            <img src="./images/tap-the-lop.jpg" alt="Kỷ niệm 12B1" id="letter-main-img">
+                        <div class="botanical botanical-right" aria-hidden="true">
+                            <span class="stem"></span>
+                            <span class="leaf leaf-one"></span>
+                            <span class="leaf leaf-two"></span>
+                            <span class="flower flower-one"><i></i><i></i><i></i><i></i><b></b></span>
+                            <span class="flower flower-two"><i></i><i></i><i></i><i></i><b></b></span>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Lớp 2: BỨC THƯ TRỒI LÊN TỪ TRONG BAO THƯ -->
+                    <article class="letter-paper">
+                        <div class="paper-botanical paper-botanical-top" aria-hidden="true">
+                            <span class="paper-stem"></span>
+                            <span class="paper-leaf paper-leaf-one"></span>
+                            <span class="paper-leaf paper-leaf-two"></span>
+                            <span class="paper-flower paper-flower-one"><i></i><i></i><i></i><i></i><b></b></span>
+                            <span class="paper-flower paper-flower-two"><i></i><i></i><i></i><i></i><b></b></span>
+                        </div>
+                        <div class="paper-botanical paper-botanical-bottom" aria-hidden="true">
+                            <span class="paper-stem"></span>
+                            <span class="paper-leaf paper-leaf-one"></span>
+                            <span class="paper-leaf paper-leaf-two"></span>
+                            <span class="paper-flower paper-flower-one"><i></i><i></i><i></i><i></i><b></b></span>
+                            <span class="paper-flower paper-flower-two"><i></i><i></i><i></i><i></i><b></b></span>
+                        </div>
+
+                        <div class="paper-topline"><span>20 / 10</span><span>12B1</span></div>
+                        
+                        <div class="paper-content">
+                            <p class="paper-greeting">Gửi các cô gái thân yêu,</p>
+                            <p>Chúc những bông hoa rực rỡ nhất của 12B1 luôn xinh đẹp, vui vẻ và tỏa sáng theo cách riêng của mình.</p>
+                            <p>Cảm ơn vì đã làm thanh xuân này trở nên thật dịu dàng và đáng nhớ. Chúc các bạn thi đâu đậu đó, đạt mọi nguyện vọng ước mơ nha!</p>
+                            <p class="paper-wish">Mãi vui, mãi thương nhau nhé!</p>
+                        </div>
+
+                        <img class="paper-portrait" src="./images/tap-the-lop.jpg" alt="Cô gái / Tập thể 12B1" />
+                        <div class="paper-sign">Thương gửi từ 12B1 <span>♡</span></div>
+                    </article>
+
+                    <!-- Lớp 3: Mặt trước bao thư (Che chân lá thư) -->
+                    <div class="envelope-front">
+                        <div class="front-lines front-left"></div>
+                        <div class="front-lines front-right"></div>
+                        <div class="wax-seal">♡</div>
+                    </div>
+
+                    <!-- Lớp 4: Nắp bao thư (Flap) -->
+                    <div class="envelope-flap"><span>♡</span></div>
+                </button>
+
+                <p class="interaction-hint" id="interaction-hint">Nhấn để mở thư</p>
             </div>
         </div>
     </div>

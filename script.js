@@ -1,4 +1,5 @@
 // Mảng gốc các bạn nữ (Đúng số lượng ảnh gốc cho Scene 3)
+const isMobile = window.innerWidth < 768;
 const basePhotos = [];
 
 // Tự động sinh ra 52 ảnh từ 1.jpg đến 52.jpg trong folder images/
@@ -10,10 +11,14 @@ for (let i = 1; i <= 7; i++) {
 }
 
 const classPhotos = [];
-while (classPhotos.length < 52) {
+while (classPhotos.length < 50) {
     classPhotos.push(...basePhotos);
 }
-classPhotos.length = 52;
+classPhotos.length = 50;
+
+const validStudents = [
+    "1", "2", "3", "4", "5", "6", "7"
+]
 
 // --- CANVAS HẠT LẤP LÁNH (GIỮ XUYÊN SUỐT) ---
 const canvas = document.getElementById('sparkle-canvas');
@@ -90,25 +95,76 @@ function animateCanvas() {
 }
 animateCanvas();
 
-// --- SCENE 1 & SCENE 2 LOGIC ---
+// --- HÀM XỬ LÝ CHUYỂN CẢNH & CÁ NHÂN HÓA ĐỘNG ---
 function startBouquetScene() {
+    const nameInput = document.getElementById('user-name-input');
+    const errorMsgEl = document.getElementById('name-error-msg');
+    
+    // Reset thông báo lỗi cũ
+    if (errorMsgEl) errorMsgEl.innerText = "";
+
+    const rawName = nameInput ? nameInput.value.trim() : "";
+    
+    // 🛑 TRƯỜNG HỢP 1: Không nhập gì cả
+    if (!rawName) {
+        if (errorMsgEl) {
+            errorMsgEl.innerText = "🌸 Nhập họ tên vào để nhận điều đặc biệt nhé!";
+        }
+        if (nameInput) nameInput.focus();
+        return; // Dừng lại, không cho chuyển cảnh
+    }
+    
+    // Normalize chuỗi nhập vào
+    const cleanFileName = rawName.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[đĐ]/g, "d")
+        .replace(/[^a-z0-9]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-\$/g, "");
+
+    // 🛑 TRƯỜNG HỢP 2: Nhập không có trong danh sách lớp
+    if (!validStudents.includes(cleanFileName)) {
+        if (errorMsgEl) {
+            errorMsgEl.innerText = "💖 Nhớ nhập đầy đủ tên của mình nhé cô gái!";
+        }
+        if (nameInput) nameInput.focus();
+        return; // Dừng lại
+    }
+
+    // --- NẾU HỢP LỆ THÌ TIẾN HÀNH XỬ LÝ DỮ LIỆU & CHUYỂN CẢNH ---
+    let displayName = rawName;
+    let imagePath = `./images/girls/${cleanFileName}.png`;
+    let finalWish = `Chúc ${displayName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc, tràn đầy năng lượng và đạt được mọi ước mơ trong chặng đường sắp tới nhé!`;
+
+    updateLetterDynamicContent({
+        name: displayName,
+        image: imagePath,
+        wish: finalWish
+    });
+
+    // Chuyển cảnh sang 3D
     const introCard = document.querySelector('.intro-card');
     const introScene = document.getElementById('intro-scene');
     const bouquetScene = document.getElementById('bouquet-scene');
     const bouquetBox = document.getElementById('bouquet-box');
+    const welcomeBox = document.querySelector('.welcome-box');
 
-    // Bước 1: Thu nhỏ và phát sáng card Scene 1
-    introCard.classList.add('zoom-out-out');
+    if (introCard) {
+        introCard.classList.add('zoom-out-out');
+    }
 
     setTimeout(() => {
-        // Bước 2: Ẩn Scene 1, hiện Scene 2
-        introScene.classList.add('hidden');
-        bouquetScene.classList.remove('hidden');
+        if (introScene) introScene.classList.add('hidden');
+        if (bouquetScene) bouquetScene.classList.remove('hidden');
+        if (welcomeBox) welcomeBox.classList.add('hidden');
         
-        // Bước 3: Cho Bó hoa bùng nổ hiện ra mượt mà từ tâm
-        bouquetBox.classList.add('portal-appear');
+        if (bouquetBox) {
+            bouquetBox.classList.add('portal-appear');
+        }
         
-        initSmallBlooms();
+        if (typeof initSmallBlooms === 'function') {
+            initSmallBlooms();
+        }
     }, 600);
 }
 
@@ -326,8 +382,7 @@ function initStreamingUniverse() {
     streamItems = [];
 
     // 🌟 TỐI ƯU DEVELOPER: Nếu là điện thoại, giảm số lượng xuống 45 items để mượt 60FPS, PC giữ 120 items
-    const isMobile = window.innerWidth < 768;
-    const totalElements = isMobile ? 45 : 120; 
+    const totalElements = isMobile ? 60 : 120; 
 
     for (let i = 0; i < totalElements; i++) {
         let type, content;
@@ -530,31 +585,54 @@ function closeModal() {
     document.getElementById('image-modal').classList.add('hidden');
 }
 
-// --- XỬ LÝ ĐÓNG / MỞ PHONG THƯ TÌNH YÊU 20/10 ---
+// --- XỬ LÝ ĐÓNG / MỞ PHONG THƯ ĐA LỚP 3D ---
 
-// Hàm bật/tắt cửa sổ phong thư
 function toggleEnvelope(show) {
-    const envelopeOverlay = document.getElementById('envelope-overlay');
+    const overlay = document.getElementById('envelope-overlay');
     const envelopeCard = document.getElementById('envelope-card');
-    const letterContent = document.getElementById('letter-content');
-
+    
     if (show) {
-        envelopeOverlay.classList.remove('hidden');
-        envelopeCard.classList.remove('hidden');
-        letterContent.classList.add('hidden'); // Trở về trạng thái phong thư ban đầu
+        overlay.classList.remove('hidden');
     } else {
-        envelopeOverlay.classList.add('hidden');
+        overlay.classList.add('hidden');
+        // Reset trạng thái khi đóng lại
+        envelopeCard.classList.remove('is-open');
+        document.getElementById('interaction-hint').innerText = 'Nhấn để mở thư';
     }
 }
 
-// Hàm bấm vào phong thư để mở thiệp chúc mừng bên trong
 function openLetterContent() {
     const envelopeCard = document.getElementById('envelope-card');
-    const letterContent = document.getElementById('letter-content');
+    const hint = document.getElementById('interaction-hint');
+    
+    // Toggle trạng thái mở/đóng giống như trong mẫu React (setOpened(!value))
+    envelopeCard.classList.toggle('is-open');
+    
+    if (envelopeCard.classList.contains('is-open')) {
+        hint.innerText = 'Chạm lần nữa để gấp thư lại';
+    } else {
+        hint.innerText = 'Nhấn để mở thư';
+    }
+}
 
-    // Mở nắp/ẩn vỏ thư và hiện thiệp chúc mừng
-    envelopeCard.classList.add('hidden');
-    letterContent.classList.remove('hidden');
-    const mainImg = document.getElementById('letter-main-img');
-    mainImg.src = "./images/tap-the-lop.jpg"
+// 3. HÀM CẬP NHẬT NỘI DUNG LÊN THƯ GIẤY
+// Hàm cập nhật nội dung lên giấy thư
+function updateLetterDynamicContent(data) {
+    const greetingEl = document.querySelector('.paper-greeting');
+    if (greetingEl) {
+        greetingEl.innerText = `Gửi ${data.name},`;
+    }
+
+    const wishEl = document.querySelector('.paper-content p:nth-child(2)');
+    if (wishEl) {
+        wishEl.innerText = data.wish;
+    }
+
+    const portraitImg = document.querySelector('.paper-portrait');
+    if (portraitImg) {
+        portraitImg.src = data.image;
+        portraitImg.onerror = function() {
+            this.src = "./images/tap-the-lop.jpg";
+        };
+    }
 }

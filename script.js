@@ -96,25 +96,28 @@ function animateCanvas() {
 animateCanvas();
 
 // --- HÀM XỬ LÝ CHUYỂN CẢNH & CÁ NHÂN HÓA ĐỘNG ---
-function startBouquetScene() {
+// 🌸 Khi bấm nút mở quà ở trang đầu: Kiểm tra tên, nếu hợp lệ thì BẬT CANVAS SƯƠNG MỜ LÊN
+function onStartScratch() {
     const nameInput = document.getElementById('user-name-input');
     const errorMsgEl = document.getElementById('name-error-msg');
-    
-    // Reset thông báo lỗi cũ
     if (errorMsgEl) errorMsgEl.innerText = "";
-
     const rawName = nameInput ? nameInput.value.trim() : "";
-    
-    // 🛑 TRƯỜNG HỢP 1: Không nhập gì cả
+
     if (!rawName) {
-        if (errorMsgEl) {
-            errorMsgEl.innerText = "🌸 Nhập họ tên vào để nhận điều đặc biệt nhé!";
-        }
+        if (errorMsgEl) errorMsgEl.innerText = "🌸 Nhập họ tên vào để nhận điều đặc biệt nhé!";
         if (nameInput) nameInput.focus();
-        return; // Dừng lại, không cho chuyển cảnh
+        return;
     }
-    
-    // Normalize chuỗi nhập vào
+
+    // Xử lý lưu thông tin tên & ảnh động trước (nếu cần dùng tiếp theo)
+    prepareStudentData(rawName);
+
+    // 🌟 Kích hoạt canvas sương mờ để người dùng cào/lau
+    activateFogCanvas();
+}
+
+// 🌸 Hàm lưu tạm dữ liệu học sinh
+function prepareStudentData(rawName) {
     const cleanFileName = rawName.toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/[đĐ]/g, "d")
@@ -122,27 +125,108 @@ function startBouquetScene() {
         .replace(/-+/g, "-")
         .replace(/^-|-\$/g, "");
 
-    // 🛑 TRƯỜNG HỢP 2: Nhập không có trong danh sách lớp
-    if (!validStudents.includes(cleanFileName)) {
-        if (errorMsgEl) {
-            errorMsgEl.innerText = "💖 Nhớ nhập đầy đủ tên của mình nhé cô gái!";
-        }
-        if (nameInput) nameInput.focus();
-        return; // Dừng lại
-    }
-
-    // --- NẾU HỢP LỆ THÌ TIẾN HÀNH XỬ LÝ DỮ LIỆU & CHUYỂN CẢNH ---
     let displayName = rawName;
     let imagePath = `./images/girls/${cleanFileName}.png`;
-    let finalWish = `Chúc ${displayName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc, tràn đầy năng lượng và đạt được mọi ước mơ trong chặng đường sắp tới nhé!`;
+    let finalWish = `Chúc ${displayName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé! ✨`;
 
     updateLetterDynamicContent({
         name: displayName,
         image: imagePath,
         wish: finalWish
     });
+}
 
-    // Chuyển cảnh sang 3D
+// 🌸 Hàm Cào sương mờ
+function activateFogCanvas() {
+    const canvas = document.getElementById('fog-canvas');
+    if (!canvas) return;
+    
+    canvas.classList.remove('hidden');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let clearedPixels = 0;
+    let isCompleted = false;
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.fillStyle = '#fff0f5'; // Màu sương mờ hồng nhẹ
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = 'italic 18px Georgia, serif';
+        ctx.fillStyle = '#c2185b';
+        ctx.textAlign = 'center';
+        ctx.fillText('Dùng tay / chuột lau sạch lớp sương mờ nhé... 🌸', canvas.width / 2, canvas.height / 2);
+    }
+
+    const brushRadius = isMobile ? 45 : 60;
+
+    function scratch(x, y) {
+        if (isCompleted) return;
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, brushRadius, 0, Math.PI * 2, false);
+        ctx.fill();
+        ctx.restore();
+        checkClearedPercentage();
+    }
+
+    function checkClearedPercentage() {
+        if (isCompleted) return;
+        clearedPixels++;
+        if (clearedPixels % 12 !== 0) return;
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        let transparentCount = 0;
+
+        for (let i = 3; i < pixels.length; i += 16) {
+            if (pixels[i] === 0) transparentCount++;
+        }
+
+        const percentage = (transparentCount / (pixels.length / 16)) * 100;
+
+        // 🌟 KHI LAU XONG > 45%: Ẩn canvas đi VÀ GỌI HÀM CHUYỂN SCENE CHÍNH THỨC
+        if (percentage > 45) {
+            isCompleted = true;
+            canvas.classList.add('fade-out');
+
+            setTimeout(() => {
+                canvas.style.display = 'none';
+                
+                // 👉 BÂY GIỜ MỚI GỌI HÀM CHUYỂN SCENE THẬT (Hiện bó hoa, chạy smallBlooms, bật nhạc)
+                startBouquetScene();
+
+            }, 1000);
+        }
+    }
+
+    // Sự kiện chuột & touch
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e.clientX, e.clientY); });
+    canvas.addEventListener('mousemove', (e) => { if (isDrawing) scratch(e.clientX, e.clientY); });
+    window.addEventListener('mouseup', () => { isDrawing = false; });
+
+    canvas.addEventListener('touchstart', (e) => {
+        isDrawing = true;
+        const touch = e.touches[0];
+        scratch(touch.clientX, touch.clientY);
+    }, { passive: true });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        if (isDrawing && e.touches.length > 0) {
+            const touch = e.touches[0];
+            scratch(touch.clientX, touch.clientY);
+        }
+    }, { passive: true });
+    canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+}
+
+// 🌸 HÀM CHUYỂN SCENE CHÍNH THỨC (Giữ nguyên logic cũ của bạn)
+function startBouquetScene() {
     const introCard = document.querySelector('.intro-card');
     const introScene = document.getElementById('intro-scene');
     const bouquetScene = document.getElementById('bouquet-scene');
@@ -162,9 +246,8 @@ function startBouquetScene() {
             bouquetBox.classList.add('portal-appear');
         }
         
-        if (typeof initSmallBlooms === 'function') {
-            initSmallBlooms();
-        }
+        // Kích hoạt smallBlooms và nhạc nền chuẩn xác ở đây
+        initSmallBlooms();
     }, 600);
 }
 
@@ -224,6 +307,10 @@ function triggerBouquetAction() {
         bouquetBox.classList.add('sinking-down');
 
         // Hiển thị câu thoại cinematic lắng đọng
+        const audio = document.getElementById('bg-music');
+        if (audio) {
+            audio.play().catch(() => {});
+        }
         showAdvancedCinematicText();
 
         // 🌟 Gọi hàm floodScreenPhotos() để ảnh bung nở tỏa ra khắp màn hình 2D mượt mà
@@ -352,7 +439,7 @@ function toggleMusic() {
 // --- SCENE 3: DÒNG CHẢY KỶ NIỆM (FLOWING 3D STREAM) ---
 const wishes3D = [
     "Chúc bạn tui 20/10 ngập tràn quà nhé",
-    "Mãi là bạn tốt cùng nhau vượt vũ môn nha",
+    "Mãi là bạn tốt cùng nhau tiến bộ trong học tập nha",
     "Chúc bạn luôn xinh đẹp, bớt dỗi lại nhé",
     "Thanh xuân cấp 3 có cậu thật tuyệt",
     "20/10 rực rỡ, luôn cười tươi nha bạn tôi",

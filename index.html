@@ -11,6 +11,8 @@
 
     <!-- Canvas hạt lấp lánh nền (Giữ xuyên suốt mọi Scene) -->
     <canvas id="sparkle-canvas"></canvas>
+    <!-- 🌟 CANVAS LỚP SƯƠNG MỜ CHO CÀO / LAU KÍNH -->
+    <canvas id="fog-canvas" class="fog-canvas hidden"></canvas>
 
     <!-- SCENE 1: Màn hình Ảnh Lớp 12B1 -->
     <div id="intro-scene" class="scene">
@@ -39,7 +41,7 @@
                 <p id="name-error-msg" class="error-msg"></p>
             </div>
 
-            <button class="action-btn" onclick="startBouquetScene()">
+            <button class="action-btn" onclick="onStartScratch()">
                 <span>Mở Món Quà Đặc Biệt 🎁</span>
             </button>
         </div>

@@ -766,3 +766,28 @@ div {
     transition: all 0.3s ease;
     animation: fadeIn 0.3s ease;
 }
+
+
+
+/* Fog */
+.fog-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    cursor: pointer;
+    touch-action: none; /* Ngăn cuộn trang trên điện thoại khi vuốt cào kính */
+    transition: opacity 1s ease;
+}
+
+/* Trạng thái ẩn ban đầu */
+.fog-canvas.hidden {
+    display: none !important;
+}
+
+.fog-canvas.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}

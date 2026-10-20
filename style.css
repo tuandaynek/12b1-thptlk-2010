@@ -1061,6 +1061,50 @@ div {
     transform: scale(1) var(--card-transform);
 }
 
+/* --- 📱 GIAO DIỆN MOBILE (Đẩy lên TRÊN và xuống DƯỚI) --- */
+@media (max-width: 768px) {
+    .cinematic-stage {
+        gap: 25px;
+        transform: scale(0.9);
+    }
+
+    .photo-side-panel {
+        position: absolute;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        height: auto;
+        max-height: 28vh; /* Giới hạn chiều cao không che màn hình giữa */
+        display: flex;
+        flex-wrap: wrap; /* Tự động xuống dòng khi đầy */
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        overflow-y: auto;
+        grid-template-columns: none;
+    }
+
+    /* Lựa chọn 1 nằm ở TRÊN */
+    .photo-side-panel.top {
+        top: 8px;
+        bottom: auto;
+    }
+
+    /* Lựa chọn 2 nằm ở DƯỚI */
+    .photo-side-panel.bottom {
+        bottom: 8px;
+        top: auto;
+    }
+
+    /* Thu nhỏ kích thước ảnh trên mobile cho gọn gàng xinh xắn */
+    .neat-card {
+        width: 52px !important;
+        height: 68px !important;
+        border-width: 1.5px;
+    }
+}
+
 /* 🌟 Hiệu ứng vòng tròn xoay vòng (Circular Carousel) */
 .circle-orbit-container {
     position: absolute;

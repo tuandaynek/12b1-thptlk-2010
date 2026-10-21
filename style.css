@@ -683,68 +683,69 @@ body {
 
 @media (max-width: 520px) {
     .letter-scene { 
-        padding-top: .5rem; 
-        width: 96vw; 
+        padding-top: .2rem; 
+        width: 98vw; 
     }
     
     .envelope { 
-        width: 95vw; 
+        width: 96vw; 
     }
 
-    /* Tối ưu kích thước giấy thư trên điện thoại */
+    /* 🌟 Kéo dài tờ giấy trắng, tối ưu không gian hiển thị dọc */
     .letter-paper { 
         left: 2%; 
         right: 2%; 
-        padding: 1.2rem 1rem 1rem; 
-        max-height: 75vh;
-        overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+        padding: 1.4rem 1.1rem 1.2rem; 
+        min-height: 480px; /* Đảm bảo tờ giấy có chiều dài tối thiểu thoải mái */
+        max-height: 88vh;  /* Nới rộng tối đa khung hiển thị trên màn hình dọc */
+        overflow-y: auto;  /* Chỉ cuộn nhẹ trong trường hợp màn hình điện thoại quá lùn */
     }
 
-    /* Cho phần nội dung chữ trải dài toàn bộ chiều rộng, không bị bóp cột */
+    /* 🌟 Tối ưu nội dung chữ: tăng nhẹ độ dễ đọc và khoảng cách */
     .paper-content { 
         max-width: 100% !important; 
         padding-right: 0 !important; 
-        font-size: 0.78rem; 
-        line-height: 1.55; 
-        margin-top: 0.4rem;
+        font-size: 0.82rem; 
+        line-height: 1.6; 
+        margin-top: 0.5rem;
     }
 
     .paper-content p { 
-        margin-bottom: 0.5rem; 
+        margin-bottom: 0.6rem; 
     }
 
-    /* Đưa ảnh portrait xuống dưới dạng khối căn giữa, không bị đè lên chữ */
+    /* 🌟 Căn chỉnh ảnh chân dung nằm cân đối bên dưới đoạn văn */
     .paper-portrait { 
         position: relative !important; 
         display: block !important;
-        margin: 12px auto 8px auto !important;
+        margin: 14px auto 10px auto !important;
         right: auto !important; 
         bottom: auto !important; 
-        width: 90px !important; 
-        height: 110px !important; 
+        width: 95px !important; 
+        height: 115px !important; 
         max-height: none !important;
         transform: none !important;
         border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
-    /* Căn chỉnh lại chữ ký ở dưới */
+    /* Căn chỉnh lại chữ ký ở cuối thư */
     .paper-sign {
         width: 100% !important;
         justify-content: center;
         text-align: center;
-        margin-top: 0.5rem;
-        font-size: 0.7rem;
+        margin-top: 0.8rem;
+        font-size: 0.75rem;
     }
 
-    /* Điều chỉnh độ trồi lên của thư trên màn hình nhỏ */
+    /* 🌟 Điều chỉnh độ trồi lên của phong bì để cân đối với tờ giấy dài */
     .envelope.is-open .letter-paper { 
-        transform: translateY(-44%); 
+        transform: translateY(-46%); 
     }
 
     .interaction-hint { 
-        margin-top: 1.2rem; 
-        font-size: 0.7rem;
+        margin-top: 1.4rem; 
+        font-size: 0.72rem;
     }
 }
 
@@ -1117,7 +1118,7 @@ div {
     }
 }
 
-/* 🌟 Container quỹ đạo đặt chính giữa màn hình */
+/* 🌟 Container quỹ đạo chính giữa màn hình */
 .circle-orbit-container {
     position: absolute;
     top: 50%;
@@ -1126,7 +1127,17 @@ div {
     height: 0;
     z-index: 100;
     pointer-events: none;
-    transform: translate(-50%, -50%);
+    /* Mặc định trên PC: Scale bắt đầu từ 0 -> 1 */
+    --initial-scale: 1;
+    --target-scale: 0.35;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.8s ease;
+}
+
+.circle-orbit-container.active-orbit {
+    transform: translate(-50%, -50%) scale(var(--initial-scale));
+    opacity: 1;
 }
 
 .orbit-photo {
@@ -1138,10 +1149,32 @@ div {
     border: 2px solid #ff80ab;
     box-shadow: 0 0 25px rgba(255, 64, 129, 0.9);
     transform-origin: center center;
-    /* Thời lượng 12 giây cho ảnh trôi mượt mà */
     animation: moveHeart 12s linear infinite;
     top: -45px;
     left: -35px;
+}
+
+/* --- 📱 RESPONSIVE CHO MOBILE (Dùng biến CSS thay vì !important để JS điều khiển được) --- */
+@media (max-width: 768px) {
+    .circle-orbit-container {
+        --initial-scale: 0.6; /* Kích thước lúc đầu vừa vặn màn hình điện thoại */
+        --target-scale: 0.22;  /* Kích thước thu nhỏ lại trước khi văng */
+    }
+
+    .orbit-photo {
+        width: 52px !important;
+        height: 68px !important;
+        top: -34px !important;
+        left: -26px !important;
+        border-width: 1.5px !important;
+        border-radius: 4px !important;
+        box-shadow: 0 0 15px rgba(255, 64, 129, 0.8) !important;
+    }
+
+    .scatter-photo {
+        width: 55px !important;
+        height: 72px !important;
+    }
 }
 
 /* 🌟 Tọa độ toán học vẽ trái tim hoàn mỹ: Có đỉnh lõm ở trên, vòm hai bên và chóp nhọn ở dưới */
@@ -1193,30 +1226,5 @@ div {
     to {
         opacity: 0;
         transform: translate(calc(-50% + var(--sc-dx)), calc(-50% + var(--sc-dy))) scale(0.2) rotate(var(--sc-rot));
-    }
-}
-
-/* --- 📱 RESPONSIVE CHO QUỸ ĐẠO TRÁI TIM TRÊN MOBILE --- */
-@media (max-width: 768px) {
-    /* Thu nhỏ toàn bộ khung trái tim vừa vặn màn hình điện thoại */
-    .circle-orbit-container {
-        transform: translate(-50%, -50%) scale(0.55) !important; 
-    }
-
-    /* Thu nhỏ ảnh lại chút xíu cho thanh thoát, không cấn viền */
-    .orbit-photo {
-        width: 52px !important;
-        height: 68px !important;
-        top: -34px !important;
-        left: -26px !important;
-        border-width: 1.5px !important;
-        border-radius: 4px !important;
-        box-shadow: 0 0 15px rgba(255, 64, 129, 0.8) !important;
-    }
-
-    /* Thu nhỏ ảnh văng tung tóe trên mobile */
-    .scatter-photo {
-        width: 55px !important;
-        height: 72px !important;
     }
 }

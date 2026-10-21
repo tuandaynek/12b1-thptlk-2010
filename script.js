@@ -401,60 +401,72 @@ function launchAndOrganizePhotos(choiceType, sideName, callback) {
     }
 }
 
-// 🌟 GRAND FINALE: Vòng tròn ảnh khổng lồ (Gộp tất cả ảnh) -> Thu nhỏ -> Văng tung tóe
+// 🌟 GRAND FINALE: Hình trái tim ảnh khổng lồ -> Thu nhỏ -> Văng tung tóe -> Vào thẳng Bó hoa
 function startGrandFinaleSequence() {
-    // 1. Ẩn 2 bên panel, các item cũ và TẮT HẲN dòng chữ prompt cho đỡ vướng mắt
-    document.querySelectorAll('.photo-side-panel').forEach(p => p.style.opacity = '0');
+    // 1. Fade out mượt mà các panel 2 bên và prompt cũ
+    document.querySelectorAll('.photo-side-panel').forEach(p => {
+        p.style.transition = 'opacity 0.6s ease';
+        p.style.opacity = '0';
+    });
+
     const stageBox = document.getElementById('cinematic-stage-box');
-    if (stageBox) stageBox.style.opacity = '0';
+    if (stageBox) {
+        stageBox.style.transition = 'opacity 0.6s ease';
+        stageBox.style.opacity = '0';
+    }
     
     const promptEl = document.getElementById('cinematic-prompt');
     if (promptEl) {
-        promptEl.style.display = 'none'; // Xóa sổ dòng chữ mất thẩm mỹ
+        promptEl.style.display = 'none';
     }
 
     const container = document.getElementById('photo-explosion-container');
     if (!container) return;
     container.innerHTML = ''; // Clear sạch màn hình
 
-    // 2. Lấy TẤT CẢ ảnh từ cả boyPhotos và presentPhotos để vòng tròn thật nhiều ảnh
+    // 2. Lấy TẤT CẢ ảnh và loại bỏ trùng lặp
     let allBoys = (typeof boyPhotos !== 'undefined') ? boyPhotos.map(getCleanImageSrc) : [];
     let allPresents = (typeof presentPhotos !== 'undefined') ? presentPhotos.map(getCleanImageSrc) : [];
     
-    // Gộp tất cả và lọc bỏ trùng lặp
     let allPhotos = [...new Set([...allBoys, ...allPresents, ...collectedPhotos.heart, ...collectedPhotos.gift])];
     
     if (allPhotos.length === 0) {
         allPhotos = ['./images/boys/boy1.png', './images/making/gift1.png'];
     }
 
-    // 3. Tạo container vòng tròn orbit khổng lồ
+    // 3. Tạo container vòng tròn/trái tim orbit
     const orbitWrapper = document.createElement('div');
     orbitWrapper.className = 'circle-orbit-container';
     container.appendChild(orbitWrapper);
 
     const totalOrbitPhotos = allPhotos.length;
-    const orbitDuration = 12; // Phải khớp với 12s trong CSS moveHeart
+    const orbitDuration = 12; // Khớp với 12s trong CSS moveHeart
     
     for (let i = 0; i < totalOrbitPhotos; i++) {
         const img = document.createElement('img');
         img.src = allPhotos[i];
         img.className = 'orbit-photo';
 
-        // Rải đều độ trễ âm để các ảnh nối đuôi nhau thành dải lụa
         const delay = - (orbitDuration / totalOrbitPhotos) * i;
         img.style.animationDelay = `${delay}s`;
 
         orbitWrapper.appendChild(img);
     }
 
+    // 🌟 Kích hoạt hiệu ứng xuất hiện trái tim bay bổng (Bloom in)
+    setTimeout(() => {
+        orbitWrapper.classList.add('active-orbit');
+    }, 50);
+
     // BƯỚC B: Sau 4 giây, thu nhỏ toàn bộ khung trái tim lại từ to -> nhỏ
     setTimeout(() => {
+        const isMob = window.innerWidth <= 768;
+        const scaleTarget = isMob ? '0.2' : '0.35';
         orbitWrapper.style.transition = 'transform 1.5s ease-in-out';
-        orbitWrapper.style.transform = 'scale(0.35)';
+        orbitWrapper.style.transform = `translate(-50%, -50%) scale(${scaleTarget})`;
     }, 4000);
 
-    // BƯỚC C: Sau 5.5 giây -> Văng tung tóe khắp màn hình rồi chuyển scene
+    // BƯỚC C: Sau 5.5 giây -> Văng tung tóe khắp màn hình
     setTimeout(() => {
         orbitWrapper.remove(); // Xóa khung trái tim đi
 
@@ -472,16 +484,40 @@ function startGrandFinaleSequence() {
             container.appendChild(scatterImg);
         }
 
-        // BƯỚC D: Chuyển sang Scene bó hoa 3D
+        // BƯỚC D: CHUYỂN THẲNG VÀO SCENE BÓ HOA (Bypass hoàn toàn màn hình form/card cũ)
         setTimeout(() => {
             const overlay = document.getElementById('cinematic-overlay');
             if (overlay) {
-                overlay.classList.remove('active');
                 overlay.classList.add('fade-out');
                 setTimeout(() => {
                     overlay.classList.add('hidden');
-                    if (typeof startBouquetScene === 'function') {
-                        startBouquetScene();
+                    overlay.classList.remove('active');
+
+                    // Ẩn sạch các scene trung gian hoặc intro cũ để không bị lộ form
+                    const introScene = document.getElementById('intro-scene');
+                    if (introScene) introScene.classList.add('hidden');
+
+                    const welcomeBox = document.querySelector('.welcome-box');
+                    if (welcomeBox) welcomeBox.classList.add('hidden');
+
+                    // 🌟 Bật thẳng Scene Bó Hoa 3D
+                    const bouquetScene = document.getElementById('bouquet-scene');
+                    if (bouquetScene) {
+                        bouquetScene.classList.remove('hidden');
+                        bouquetScene.style.opacity = '0';
+                        setTimeout(() => {
+                            bouquetScene.style.transition = 'opacity 0.8s ease';
+                            bouquetScene.style.opacity = '1';
+                        }, 50);
+                    }
+
+                    const bouquetBox = document.getElementById('bouquet-box');
+                    if (bouquetBox) {
+                        bouquetBox.classList.add('portal-appear');
+                    }
+
+                    if (typeof initSmallBlooms === 'function') {
+                        initSmallBlooms();
                     }
                 }, 500);
             }

@@ -1,17 +1,59 @@
-// Mảng gốc các bạn nữ (Đúng số lượng ảnh gốc cho Scene 3)
 const isMobile = window.innerWidth < 768;
 const basePhotos = [];
 
 const validStudents = [
-  "1_Nguyễn Thị Hải Yến",
-  "Bùi Nguyễn Thuỷ Tiên",
-  "Huỳnh Thư Nhã Uyên",
-  "Lê Ngọc Minh Hằng",
-  "Lê Trần Bảo Ngọc",
-  "Nguyễn Thị Hải Yến",
-  "Ngô Mai Phương",
-  "Vương Thảo Như",
-];
+    "1_Bùi Nguyễn Thủy Tiên",
+    "1_Lê Ngọc Hồng Nhung",
+    "1_Lê Ngọc Minh Hằng",
+    "1_Lê Trần Bảo Ngọc",
+    "1_Nguyễn Ngọc Thiên Thanh",
+    "1_Ngô Mai Phương",
+    "1_Vương Thảo Như",
+    "Bùi Nguyễn Thủy Tiên",
+    "Hoàng Mỹ Yến Phương",
+    "Huỳnh Thư Nhã Uyên",
+    "Phạm Quỳnh Như",
+    "Nguyễn Ngọc Quỳnh Như",
+    "Kha Trần Minh Anh",
+    "Lê Ngọc Hồng Nhung",
+    "Lê Ngọc Minh Hằng",
+    "Lê Trần Bảo Ngọc",
+    "Nguyễn Ngọc Bảo Tiên",
+    "Nguyễn Ngọc Thiên Thanh",
+    "Nguyễn Ngọc Thảo Trâm",
+    "Nguyễn Phương Bảo Ngọc",
+    "Nguyễn Thanh Nga",
+    "Nguyễn Thị Hải Yến",
+    "Ngô Mai Phương",
+    "Phan Đỗ Xuân Nghi",
+    "Phạm Thanh Thuỳ",
+    "Trần Kim Ngọc",
+    "Trần Thị Hiền Thê",
+    "Vương Thảo Như"
+]
+
+const exceptions = [
+  {
+    including: ["Bùi Nguyễn Thủy Tiên", "Bùi Nguyễn Thuỷ Tiên"],
+    correct: "Bùi Nguyễn Thủy Tiên"
+  },
+  {
+    including: ["Huỳnh Thư Nhã Uyên", "Hùynh Thư Nhã Uyên"],
+    correct: "Huỳnh Thư Nhã Uyên"
+  },
+  {
+    including: ["Phạm Quỳnh Như", "Phạm Qùynh Như"],
+    correct: "Phạm Quỳnh Như"
+  },
+  {
+    including: ["Nguyễn Ngọc Quỳnh Như", "Nguyễn Ngọc Qùynh Như"],
+    correct: "Nguyễn Ngọc Quỳnh Như"
+  },
+  {
+    including: ["Phạm Thanh Thuỳ", "Phạm Thanh Thùy"],
+    correct: "Phạm Thanh Thuỳ"
+  }
+]
 
 const sameName = [
   {
@@ -40,13 +82,13 @@ for (let i = 0; i < validStudents.length; i++) {
 }
 
 const classPhotos = [];
-while (classPhotos.length < 50) {
+while (classPhotos.length < 84) {
   classPhotos.push(...basePhotos);
 }
-classPhotos.length = 50;
+classPhotos.length = 84;
 
 const totalBoyPhotos = 22;
-const totalPresentPhotos = 22;
+const totalPresentPhotos = 9;
 
 const boyPhotos = [];
 for (let i = 1; i <= totalBoyPhotos; i++)
@@ -166,7 +208,15 @@ function prepareStudentData(rawName) {
     .split(" ")
     .filter((word) => word.length > 0)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
-  const formattedName = arrayName.join(" ");
+  let formattedName = arrayName.join(" ");
+
+  // Tìm xem có object nào chứa tên này trong mảng including không
+  const matchedException = exceptions.find(item => item.including.includes(formattedName));
+
+  if (matchedException) {
+      formattedName = matchedException.correct;
+  }
+
   let shortName = "";
 
   for (let i = 0; i < sameName.length; i++) {
@@ -298,25 +348,23 @@ function triggerFirstExplosionAndNeat(choiceType) {
   const targetItem = choiceType === "heart" ? heartItem : giftItem;
   if (targetItem) targetItem.classList.add("shake-violently");
 
-  setTimeout(() => {
-    if (targetItem) targetItem.classList.remove("shake-violently");
+  if (targetItem) targetItem.classList.remove("shake-violently");
 
-    // Tuôn trào ảnh rồi xếp gọn vào lề (Heart -> Trái, Gift -> Phải)
-    const side = choiceType === "heart" ? "left" : "right";
-    launchAndOrganizePhotos(choiceType, side, () => {
-      // Sau khi xếp xong, đổi text yêu cầu mở cái còn lại
-      if (promptEl) {
-        promptEl.innerText = "Trẻ con mới chọn, mở cả cái còn lại đi nào";
-        promptEl.style.color = "#ffd1dc";
-      }
-      // Kích hoạt item còn lại để có thể click tiếp
-      const remainingItem = choiceType === "heart" ? giftItem : heartItem;
-      if (remainingItem) {
-        remainingItem.style.opacity = "1";
-        remainingItem.style.cursor = "pointer";
-      }
-    });
-  }, 1000);
+  // Tuôn trào ảnh rồi xếp gọn vào lề (Heart -> Trái, Gift -> Phải)
+  const side = choiceType === "heart" ? "left" : "right";
+  launchAndOrganizePhotos(choiceType, side, () => {
+    // Sau khi xếp xong, đổi text yêu cầu mở cái còn lại
+    if (promptEl) {
+      promptEl.innerText = "Trẻ con mới chọn, mở cả cái còn lại đi nào";
+      promptEl.style.color = "#ffd1dc";
+    }
+    // Kích hoạt item còn lại để có thể click tiếp
+    const remainingItem = choiceType === "heart" ? giftItem : heartItem;
+    if (remainingItem) {
+      remainingItem.style.opacity = "1";
+      remainingItem.style.cursor = "pointer";
+    }
+  });
 }
 
 // 2. Mở cái thứ hai (cái còn lại)
@@ -331,21 +379,19 @@ function triggerSecondOpening(choiceType) {
   const targetItem = choiceType === "heart" ? heartItem : giftItem;
   if (targetItem) targetItem.classList.add("shake-violently");
 
-  setTimeout(() => {
-    if (targetItem) targetItem.classList.remove("shake-violently");
+  if (targetItem) targetItem.classList.remove("shake-violently");
 
-    const side = choiceType === "heart" ? "left" : "right";
-    launchAndOrganizePhotos(choiceType, side, () => {
-      // Khi cả 2 đã mở xong -> Kích hoạt Grand Finale (Vòng tròn xoay vòng -> Văng tung tóe -> Vào scene chính)
-      if (promptEl) {
-        promptEl.innerText = "Tuyệt vời! Khám phá bất ngờ lớn nhất nào 🌸";
-      }
+  const side = choiceType === "heart" ? "left" : "right";
+  launchAndOrganizePhotos(choiceType, side, () => {
+    // Khi cả 2 đã mở xong -> Kích hoạt Grand Finale (Vòng tròn xoay vòng -> Văng tung tóe -> Vào scene chính)
+    if (promptEl) {
+      promptEl.innerText = "Khám phá bất ngờ lớn nhất nào 🌸";
+    }
 
-      setTimeout(() => {
-        startGrandFinaleSequence();
-      }, 1200);
-    });
-  }, 1000);
+    setTimeout(() => {
+      startGrandFinaleSequence();
+    }, 2000);
+  });
 }
 
 // 🛠️ Hàm bóc tách đường dẫn ảnh sạch sẽ, tránh lấy nhầm Object/HTML card
@@ -631,8 +677,8 @@ function initSmallBlooms() {
 
   const total = classPhotos.length;
   let accumulatedDelay = 0;
-  const startInterval = 0.16;
-  const endInterval = 0.015;
+  const startInterval = 0.15;
+  const endInterval = 0.005;
   const step = (startInterval - endInterval) / (total - 1);
 
   classPhotos.forEach((item, index) => {
@@ -735,7 +781,7 @@ function triggerBouquetAction() {
                 });
 
             }, 800); // Thời gian fade-out scene 2
-        }, totalFloodDuration + 1500); // Đợi ảnh nở xong + 1.5s ngắm nhìn trọn vẹn
+        }, totalFloodDuration + 700); // Đợi ảnh nở xong + 1.5s ngắm nhìn trọn vẹn
     }, 2000);
 
     step = 3;
@@ -874,13 +920,13 @@ function initStreamingUniverse() {
   streamItems = [];
 
   // 🌟 TỐI ƯU DEVELOPER: Nếu là điện thoại, giảm số lượng xuống 45 items để mượt 60FPS, PC giữ 120 items
-  const totalElements = isMobile ? 80 : 120;
+  const totalElements = isMobile ? 70 : 120;
 
   for (let i = 0; i < totalElements; i++) {
     let type, content;
-    if (i < basePhotos.length * 2) {
+    if (i < basePhotos.length) {
       type = "photo";
-      content = basePhotos[i % basePhotos.length];
+      content = basePhotos[i];
     } else if (i % 2 === 0) {
       type = "text";
       content = wishes3D[Math.floor(Math.random() * wishes3D.length)];

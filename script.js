@@ -723,6 +723,8 @@ function floodScreenPhotos() {
   const endInterval = isMobile ? 0.08 : 0.004;
   const stepInterval = (startInterval - endInterval) / (total - 1 || 1);
 
+  const fragment = document.createDocumentFragment();
+
   classPhotos.forEach((item, index) => {
     const photoDiv = document.createElement("div");
     photoDiv.className = "universe-photo";
@@ -757,8 +759,10 @@ function floodScreenPhotos() {
       if (typeof openModal === "function") openModal(item);
     };
 
-    universeContainer.appendChild(photoDiv);
-  });
+    fragment.appendChild(photoDiv)
+
+});
+    universeContainer.appendChild(fragment);
 
   // Trả về tổng thời gian delay (tính bằng mili-giây) + thêm 1000ms thời lượng animation của tấm cuối cùng
   return accumulatedDelay * 1000 + 1000;

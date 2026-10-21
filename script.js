@@ -685,37 +685,57 @@ function triggerBouquetAction() {
 
     // 🌟 Sau 2 giây, bó hoa biến mất và kích hoạt hiệu ứng bung nở ảnh
     setTimeout(() => {
-      bouquetBox.classList.add("disappear");
+        bouquetBox.classList.add("disappear");
 
-      // floodScreenPhotos sẽ trả về tổng thời gian (ms) chạy xong toàn bộ ảnh
-      const totalFloodDuration = floodScreenPhotos();
+        // floodScreenPhotos trả về tổng thời gian chạy xong toàn bộ ảnh
+        const totalFloodDuration = floodScreenPhotos();
 
-      // 🌟 CHỜ CHO ĐẾN KHI TOÀN BỘ ẢNH BUNG NỞ XONG HẲN MỚI CHUYỂN SANG 3D
-      setTimeout(() => {
-        const bouquetScene = document.getElementById("bouquet-scene");
-        if (!bouquetScene) return;
-
-        bouquetScene.classList.add("smooth-fade-out"); // Mờ dần Scene 2
-
+        // 🌟 CHỜ CHO ĐẾN KHI ẢNH NỞ XONG + THÊM 1.5S ĐỂ KỊP NGẮM NHÌN, RỒI MỚI CHUYỂN CẢNH
         setTimeout(() => {
-          bouquetScene.classList.add("hidden");
+            const bouquetScene = document.getElementById("bouquet-scene");
+            if (!bouquetScene) return;
 
-          const scene3 = document.getElementById("universe-3d-scene");
-          if (!scene3) return;
+            bouquetScene.classList.add("smooth-fade-out"); // Mờ dần Scene 2
 
-          scene3.classList.remove("hidden");
-          scene3.style.opacity = "0";
+            // 🌟 GIẢI PHÓNG TÀI NGUYÊN: Fade-out và làm sạch container ảnh bung nở trước
+            const universeContainer = document.getElementById("universe-container");
+            if (universeContainer) {
+                universeContainer.style.transition = "opacity 0.5s ease";
+                universeContainer.style.opacity = "0";
+            }
 
-          // Fade-in không gian 3D từ từ
-          setTimeout(() => {
-            scene3.style.opacity = "1";
-          }, 50);
+            setTimeout(() => {
+                bouquetScene.classList.add("hidden");
+                
+                // Dọn sạch DOM của ảnh bung nở để trả lại toàn bộ tài nguyên GPU cho 3D
+                if (universeContainer) {
+                    universeContainer.classList.remove("active");
+                    universeContainer.innerHTML = ""; 
+                    universeContainer.style.opacity = "1";
+                }
 
-          if (typeof initStreamingUniverse === "function") {
-            initStreamingUniverse();
-          }
-        }, 800); // Thời gian fade-out scene 2
-      }, totalFloodDuration + 800); // Đợi ảnh nở xong + dư ra chút đỉnh cho đẹp mắt
+                const scene3 = document.getElementById("universe-3d-scene");
+                if (!scene3) return;
+
+                scene3.classList.remove("hidden");
+                scene3.style.opacity = "0";
+
+                // Fade-in không gian 3D từ từ
+                setTimeout(() => {
+                    scene3.style.opacity = "1";
+                }, 50);
+
+                // 🌟 TỐI ƯU TUYỆT ĐỐI: Khởi tạo 3D hoàn toàn sạch sẽ, không bị tranh chấp tài nguyên
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        if (typeof initStreamingUniverse === "function") {
+                            initStreamingUniverse();
+                        }
+                    }, 350); 
+                });
+
+            }, 800); // Thời gian fade-out scene 2
+        }, totalFloodDuration + 1500); // Đợi ảnh nở xong + 1.5s ngắm nhìn trọn vẹn
     }, 2000);
 
     step = 3;
@@ -791,18 +811,6 @@ function floodScreenPhotos() {
 
   // Trả về tổng thời gian delay (tính bằng mili-giây) + thêm 1000ms thời lượng animation của tấm cuối cùng
   return accumulatedDelay * 1000 + 1000;
-}
-
-function triggerBoomEffect() {
-  const scene = document.getElementById("bouquet-scene");
-
-  setTimeout(() => {
-    scene.classList.add("hidden");
-    const scene3 = document.getElementById("universe-3d-scene");
-    scene3.classList.remove("hidden");
-
-    initStreamingUniverse();
-  }, 600);
 }
 
 // --- QUẢN LÝ NHẠC NỀN ---

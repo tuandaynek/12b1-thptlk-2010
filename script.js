@@ -235,6 +235,9 @@ function prepareStudentData(rawName) {
   let imagePath = `./images/girls/${encodedFileName}.jpg`;
 
   let finalWish = `Chúc ${shortName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé!`;
+  if (shortName === "Lớp Trưởng"){
+    finalWish = `Chúc ${shortName} học giỏi, luôn nở nụ cười trên môi và ăn uống đầy đủ để hết đói để có sức mà học nhé!!`
+  }
 
   // Cập nhật thông tin vào DOM của thư
   if (typeof updateLetterDynamicContent === "function") {

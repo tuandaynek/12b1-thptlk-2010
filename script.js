@@ -13,6 +13,25 @@ const validStudents = [
   "Vương Thảo Như",
 ];
 
+const sameName = [
+  {
+    raw: "Lê Trần Bảo Ngọc",
+    short: "Lớp Trưởng",
+  },
+  {
+    raw: "Nguyễn Phương Bảo Ngọc",
+    short: "Nguyễn Ngọc",
+  },
+  {
+    raw: "Phạm Quỳnh Như",
+    short: "Phạm Như",
+  },
+  {
+    raw: "Nguyễn Ngọc Quỳnh Như",
+    sort: "Nguyễn Như",
+  },
+];
+
 for (let i = 0; i < validStudents.length; i++) {
   basePhotos.push({
     src: `images/girls/${validStudents[i]}.jpg`,
@@ -139,25 +158,6 @@ function onStartScratch() {
   runCinematicSequence();
 }
 
-const sameName = [
-    {
-        raw: "Lê Trần Bảo Ngọc",
-        short: "Lớp Trưởng"
-    },
-    {
-        raw: "Nguyễn Phương Bảo Ngọc",
-        short: "Nguyễn Ngọc"
-    },
-    {
-        raw: "Phạm Quỳnh Như",
-        short: "Phạm Như"
-    },
-    {
-        raw: "Nguyễn Ngọc Quỳnh Như",
-        sort: "Nguyễn Như"
-    }
-]
-
 // 2. Hàm chuẩn bị dữ liệu tên & đường dẫn ảnh cá nhân
 function prepareStudentData(rawName) {
   // Viết hoa chữ cái đầu mỗi từ (VD: Lê Trần Bảo Ngọc)
@@ -167,19 +167,18 @@ function prepareStudentData(rawName) {
     .filter((word) => word.length > 0)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
   const formattedName = arrayName.join(" ");
-  let shortName = ""
+  let shortName = "";
 
-  for(let i = 0; i < sameName.length; i++){
-    if(formattedName === sameName[i].raw){
-        shortName = sameName[i].short;
+  for (let i = 0; i < sameName.length; i++) {
+    if (formattedName === sameName[i].raw) {
+      shortName = sameName[i].short;
     }
   }
 
-  if(shortName === ""){
-      const n = arrayName.length
-      shortName = arrayName[n-2] + " " + arrayName[n-1];
+  if (shortName === "") {
+    const n = arrayName.length;
+    shortName = arrayName[n - 2] + " " + arrayName[n - 1];
   }
-
 
   // Mã hóa tên file hỗ trợ khoảng trắng & dấu tiếng Việt (mặc định đuôi .jpg)
   const encodedFileName = encodeURIComponent(formattedName);
@@ -749,8 +748,8 @@ function floodScreenPhotos() {
 
   const total = classPhotos.length;
   let accumulatedDelay = 0;
-  const startInterval = isMobile ? 0.15 : 0.09;
-  const endInterval = isMobile ? 0.11 : 0.005;
+  const startInterval = isMobile ? 0.2 : 0.09;
+  const endInterval = isMobile ? 0.15 : 0.005;
   const stepInterval = (startInterval - endInterval) / (total - 1 || 1);
 
   classPhotos.forEach((item, index) => {

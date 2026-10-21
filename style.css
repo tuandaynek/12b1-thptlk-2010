@@ -740,7 +740,7 @@ body {
 
     /* 🌟 Điều chỉnh độ trồi lên của phong bì để cân đối với tờ giấy dài */
     .envelope.is-open .letter-paper { 
-        transform: translateY(-32%); 
+        transform: translateY(-20%); 
     }
 
     .interaction-hint { 

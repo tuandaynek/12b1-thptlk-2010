@@ -30,14 +30,12 @@ const totalBoyPhotos = 22;
 const totalPresentPhotos = 22;
 
 const boyPhotos = [];
-for (let i = 1; i <= totalBoyPhotos; i++) {
+for (let i = 1; i <= totalBoyPhotos; i++)
   boyPhotos.push(`images/boys/${i}.jpg`);
-}
 
 const presentPhotos = [];
-for (let i = 1; i <= totalPresentPhotos; i++) {
+for (let i = 1; i <= totalPresentPhotos; i++)
   presentPhotos.push(`images/presents/${i}.jpg`);
-}
 
 // --- CANVAS HẠT LẤP LÁNH (GIỮ XUYÊN SUỐT) ---
 const canvas = document.getElementById("sparkle-canvas");
@@ -141,21 +139,53 @@ function onStartScratch() {
   runCinematicSequence();
 }
 
+const sameName = [
+    {
+        raw: "Lê Trần Bảo Ngọc",
+        short: "Lớp Trưởng"
+    },
+    {
+        raw: "Nguyễn Phương Bảo Ngọc",
+        short: "Nguyễn Ngọc"
+    },
+    {
+        raw: "Phạm Quỳnh Như",
+        short: "Phạm Như"
+    },
+    {
+        raw: "Nguyễn Ngọc Quỳnh Như",
+        sort: "Nguyễn Như"
+    }
+]
+
 // 2. Hàm chuẩn bị dữ liệu tên & đường dẫn ảnh cá nhân
 function prepareStudentData(rawName) {
   // Viết hoa chữ cái đầu mỗi từ (VD: Lê Trần Bảo Ngọc)
-  const formattedName = rawName
+  const arrayName = rawName
     .toLowerCase()
     .split(" ")
     .filter((word) => word.length > 0)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+  const formattedName = arrayName.join(" ");
+  let shortName = ""
+
+  for(let i = 0; i < sameName.length; i++){
+    if(formattedName === sameName[i].raw){
+        shortName = sameName[i].short;
+    }
+  }
+
+  if(shortName === ""){
+      const n = arrayName.length
+      shortName = arrayName[n-2] + " " + arrayName[n-1];
+  }
+
 
   // Mã hóa tên file hỗ trợ khoảng trắng & dấu tiếng Việt (mặc định đuôi .jpg)
   const encodedFileName = encodeURIComponent(formattedName);
   let imagePath = `./images/girls/${encodedFileName}.jpg`;
 
-  let finalWish = `Chúc ${formattedName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé! ✨`;
+  let finalWish = `Chúc ${shortName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé!`;
 
   // Cập nhật thông tin vào DOM của thư
   if (typeof updateLetterDynamicContent === "function") {
@@ -719,11 +749,9 @@ function floodScreenPhotos() {
 
   const total = classPhotos.length;
   let accumulatedDelay = 0;
-  const startInterval = isMobile ? 0.12 : 0.08;
-  const endInterval = isMobile ? 0.08 : 0.004;
+  const startInterval = isMobile ? 0.15 : 0.09;
+  const endInterval = isMobile ? 0.11 : 0.005;
   const stepInterval = (startInterval - endInterval) / (total - 1 || 1);
-
-  const fragment = document.createDocumentFragment();
 
   classPhotos.forEach((item, index) => {
     const photoDiv = document.createElement("div");
@@ -759,10 +787,8 @@ function floodScreenPhotos() {
       if (typeof openModal === "function") openModal(item);
     };
 
-    fragment.appendChild(photoDiv)
-
-});
-    universeContainer.appendChild(fragment);
+    universeContainer.appendChild(photoDiv);
+  });
 
   // Trả về tổng thời gian delay (tính bằng mili-giây) + thêm 1000ms thời lượng animation của tấm cuối cùng
   return accumulatedDelay * 1000 + 1000;
@@ -835,7 +861,6 @@ let isDragging = false;
 let initialTouchDistance = 0;
 
 // --- 1. KHỞI TẠO KHÔNG GIAN 3D ĐA LỚP DÀY DẶN ---
-// --- KHỞI TẠO KHÔNG GIAN 3D TỰ ĐỘNG TỐI ƯU HIỆU NĂNG (MOBILE FRIENDLY) ---
 function initStreamingUniverse() {
   const world = document.getElementById("world-3d");
   world.innerHTML = "";

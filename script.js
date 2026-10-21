@@ -235,8 +235,10 @@ function prepareStudentData(rawName) {
   let imagePath = `./images/girls/${encodedFileName}.jpg`;
 
   let finalWish = `Chúc ${shortName} ngày 20/10 thật rực rỡ, luôn xinh đẹp, hạnh phúc và gặt hái được mọi ước mơ nhé!`;
-  if (shortName === "Lớp Trưởng"){
-    finalWish = `Chúc ${shortName} học giỏi, luôn nở nụ cười trên môi và ăn uống đầy đủ để hết đói để có sức mà học nhé!!`
+  if (formattedName === "Lê Trần Bảo Ngọc"){
+    finalWish = `Chúc Candy Girl học giỏi, luôn nở nụ cười trên môi và nhớ ăn uống đầy đủ để hết đói để có sức mà học nhé! Tui khẩu xà vậy thôi chứ tâm phật à nhen`
+  } else if (formattedName === "Vương Thảo Như"){
+    finalWish = `Chúc ${shortName} học giỏi, nụ cười luôn nở trên môi, và nhớ là phải ăn uống đầy đủ để cho sức học á nha!`
   }
 
   // Cập nhật thông tin vào DOM của thư
@@ -1180,6 +1182,15 @@ function updateLetterDynamicContent(data) {
   const wishEl = document.querySelector(".paper-content p:nth-child(2)");
   if (wishEl) {
     wishEl.innerText = data.wish;
+  }
+
+  const wishE2 = document.querySelector(".paper-content p:nth-child(3)");
+  if (wishE2) {
+    if(data.name === "Lê Trần Bảo Ngọc"){
+      wishE2.innerText = `"Vấp ngã là bản năng, đứng dậy là bản lĩnh". Vượt qua những chuyện buồn để hướng về tương lai nhé!`;
+    } else if (data.name === "Vương Thảo Như"){
+      wishE2.innerText = "Bạn hiền, ngoài việc học thì cũng phải chú ý đến sức khoẻ của mình dấy nhá. Có sức khoẻ là có tất cả!"
+    }
   }
 
   const portraitImg = document.querySelector(".paper-portrait");

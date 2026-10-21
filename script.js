@@ -819,8 +819,8 @@ function floodScreenPhotos() {
 
   const total = classPhotos.length;
   let accumulatedDelay = 0;
-  const startInterval = isMobile ? 0.2 : 0.09;
-  const endInterval = isMobile ? 0.15 : 0.005;
+  const startInterval = isMobile ? 0.25 : 0.09;
+  const endInterval = isMobile ? 0.2 : 0.005;
   const stepInterval = (startInterval - endInterval) / (total - 1 || 1);
 
   classPhotos.forEach((item, index) => {
